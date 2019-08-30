@@ -1,13 +1,17 @@
 package tsFunction
 
-import "math"
+import "os"
 
-func Area(len, wid float64) float64 {  
-    area := len * wid
-    return area
-}
-
-func Diagonal(len, wid float64) float64 {  
-    diagonal := math.Sqrt((len * len) + (wid * wid))
-    return diagonal
+//Teste si un fichier existe
+func FileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if err == nil {
+		return true
+	} else if os.IsNotExist(err) {
+		return false
+	} else if !os.IsNotExist(err) {
+		return true
+	} else {
+		return false
+	}
 }
