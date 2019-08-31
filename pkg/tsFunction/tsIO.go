@@ -1,7 +1,9 @@
-package tsFunction
+package tsIO
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 )
@@ -30,19 +32,21 @@ func CreateDirIfNotExists(dirName string) error {
 }
 
 //Creation du fichier "fileName" s'il n'existe pas
-func CreateFileIfNotExists(fileName string) error {
+func CreateFileIfNotExists(fileName string) (bool, error) {
 	var err error = nil
+	var exist = true
 	if !FileExists(fileName) {
+		exist = false
 		_, err = os.Create(fileName)
 	}
-	return err
+	return exist, err
 }
 
 //Creation du fichier log s'il n'existe pas, ouverture et ecriture d'un enrg "date et heure"
 func OpenLOG(ficLog string) (*os.File, error) {
 	var err error = nil
 	var fileLog *os.File
-	err = CreateFileIfNotExists(ficLog)
+	_, err = CreateFileIfNotExists(ficLog)
 	if err == nil {
 		fileLog, err = os.OpenFile(ficLog, os.O_APPEND|os.O_WRONLY, 0777)
 		if err == nil {
@@ -50,4 +54,20 @@ func OpenLOG(ficLog string) (*os.File, error) {
 		}
 	}
 	return fileLog, err
+}
+
+func WriteJsonFile(filename string, data interface{}) error {
+	fileContent, err := json.Marshal(data)
+	if err == nil {
+		err = ioutil.WriteFile(filename, fileContent, 0777)
+	}
+	return err
+}
+
+func ReadJsonFile(filename string, data interface{}) error {
+	fileData, err := ioutil.ReadFile(filename)
+	if err == nil {
+		err = json.Unmarshal(fileData, &data) //DECODAGE
+	}
+	return err
 }
