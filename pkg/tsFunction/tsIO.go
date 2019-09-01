@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -68,6 +69,18 @@ func ReadJsonFile(filename string, data interface{}) error {
 	fileData, err := ioutil.ReadFile(filename)
 	if err == nil {
 		err = json.Unmarshal(fileData, &data) //DECODAGE
+	}
+	return err
+}
+
+func PopLine(filename string, val string) error {
+	input, err := ioutil.ReadFile(filename)
+	if err == nil {
+		lines := strings.Split(string(input), "\n")
+		lines = lines[1:]
+		lines = append(lines, val)
+		output := strings.Join(lines, "\n")
+		err = ioutil.WriteFile(filename, []byte(output), 0777)
 	}
 	return err
 }
