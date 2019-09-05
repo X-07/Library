@@ -47,7 +47,7 @@ func MiseEnFormeByte(bps int) string {
 	return xSpeed + unit
 }
 
-// MiseEnFormeByte(nb bits)
+// MiseEnFormeBit(nb bits)
 func MiseEnFormeBit(bps int) string {
 	var unit string
 	var speed float64
@@ -90,4 +90,20 @@ func MiseEnFormeBit(bps int) string {
 	}
 
 	return xSpeed + unit
+}
+
+//function de mise en forme
+func MiseEnFormeGiga(val int64) string {
+	var xResult string
+	result := float64(val) / 1048576			//1Go
+	switch {
+		case val == 0:
+			xResult = "0.0"
+		case val > 10485760:					//10Go
+			xResult = strconv.FormatFloat(result, 'f', 0, 64) // 0 decimale
+		case val > 2097152:						//2Go
+			xResult = strconv.FormatFloat(result, 'f', 1, 64) // 1 decimale
+		default:
+	}
+	return xResult
 }
