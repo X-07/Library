@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
 const myRep = "/home/jluc1404x/.go/TableauDeBord"
 
-var TraceLog *bool       	//trace dans le fichier log
-var TraceConsole *bool		//trace sur la console
-var FicLog *string			//fichier log
-
+var TraceLog *bool     //trace dans le fichier log
+var TraceConsole *bool //trace sur la console
+var FicLog *string     //fichier log
+var fileLog *os.File
 
 //Teste si un fichier existe
 func FileExists(fileName string) bool {
@@ -53,7 +54,6 @@ func CreateFileIfNotExists(fileName string) (bool, error) {
 //Creation du fichier log s'il n'existe pas, ouverture et ecriture d'un enrg "date et heure"
 func OpenLOG(ficLog string) (*os.File, error) {
 	var err error = nil
-	var fileLog *os.File
 	_, err = CreateFileIfNotExists(ficLog)
 	if err == nil {
 		fileLog, err = os.OpenFile(ficLog, os.O_APPEND|os.O_WRONLY, 0777)
@@ -96,7 +96,7 @@ func PopLine(filename string, val string) error {
 }
 
 // récupère le répertoire de l'application
-func getAppPath() (string, error) {
+func GetAppPath() (string, error) {
 	pid := os.Getpid()
 	lnk := "/proc/" + strconv.Itoa(pid) + "/exe"
 	appRep, err := os.Readlink(lnk)
@@ -115,7 +115,22 @@ func getAppPath() (string, error) {
 	return appRep, err
 }
 
-// test pointeur entre lib et pgm principal
-func Test() {
-	fmt.Println(">>>> " + *FicLog)
+// Ecriture sur le fichier log
+func PrintLog(message string) {
+	if *TraceLog {
+		fileLog.WriteString(message)
+	}
+}
+
+// Ecriture sur la console
+func PrintConsole(message string) {
+	if *TraceConsole {
+		fmt.Println(message)
+	}
+}
+
+// Trace l'info
+func Trace(message string) {
+	PrintLog(message + "\n")
+	PrintConsole(message)
 }
