@@ -11,6 +11,10 @@ import (
 
 const myRep = "/home/jluc1404x/.go/TableauDeBord"
 
+var TraceLog *bool       	//trace dans le fichier log
+var TraceConsole *bool		//trace sur la console
+var FicLog *string			//fichier log
+
 
 //Teste si un fichier existe
 func FileExists(fileName string) bool {
@@ -109,4 +113,9 @@ func getAppPath() (string, error) {
 		}
 	}
 	return appRep, err
+}
+
+// test pointeur entre lib et pgm principal
+func Test() {
+	fmt.Println(">>>> " + *FicLog)
 }
