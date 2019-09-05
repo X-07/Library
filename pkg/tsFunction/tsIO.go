@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+const myRep = "/home/jluc1404x/.go/TableauDeBord"
+
+
 //Teste si un fichier existe
 func FileExists(fileName string) bool {
 	_, err := os.Stat(fileName)
@@ -57,6 +60,7 @@ func OpenLOG(ficLog string) (*os.File, error) {
 	return fileLog, err
 }
 
+//Ecriture dans un fichier de données "struct" au format json
 func WriteJsonFile(filename string, data interface{}) error {
 	fileContent, err := json.Marshal(data)
 	if err == nil {
@@ -65,6 +69,7 @@ func WriteJsonFile(filename string, data interface{}) error {
 	return err
 }
 
+//Lecture dans un fichier au format json et restitution en "struct"
 func ReadJsonFile(filename string, data interface{}) error {
 	fileData, err := ioutil.ReadFile(filename)
 	if err == nil {
@@ -73,6 +78,7 @@ func ReadJsonFile(filename string, data interface{}) error {
 	return err
 }
 
+//Ajoute une ligne en fin de fichier tout en supprimant la première
 func PopLine(filename string, val string) error {
 	input, err := ioutil.ReadFile(filename)
 	if err == nil {
@@ -83,4 +89,24 @@ func PopLine(filename string, val string) error {
 		err = ioutil.WriteFile(filename, []byte(output), 0777)
 	}
 	return err
+}
+
+// récupère le répertoire de l'application
+func getAppPath() (string, error) {
+	pid := os.Getpid()
+	lnk := "/proc/" + strconv.Itoa(pid) + "/exe"
+	appRep, err := os.Readlink(lnk)
+	if err == nil {
+		parts := strings.Split(appRep, "/")
+		if parts[1] == "tmp" && strings.Contains(parts[2], "go-build") {
+			appRep = myRep
+		} else {
+			appRep = ""
+			for idx := 1; idx < len(parts)-1; idx++ {
+				appRep += "/" + parts[idx]
+			}
+
+		}
+	}
+	return appRep, err
 }
