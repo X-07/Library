@@ -122,7 +122,7 @@ func ReadFileForValue(fileName string, cleVal string) (string, error) {
 	if err == nil {
 		lines := strings.Split(string(input), "\n")
 		for _, line := range lines {
-			mots := strings.Fields(ligne)
+			mots := strings.Fields(line)
 			for _, mot := range mots {
 				if mot == cleVal {
 					enrg = line
