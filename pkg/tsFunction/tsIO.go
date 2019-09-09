@@ -115,6 +115,28 @@ func GetAppPath() (string, error) {
 	return appRep, err
 }
 
+// ReadFileForValue(...) parcourt un fichier 'fileName' ligne à ligne à la recherche du mot clé 'cleVal' et retourne l'enregistrement le contenant
+func ReadFileForValue(fileName string, cleVal string) (string, error) {
+	var enrg string
+	input, err := ioutil.ReadFile(fileName)
+	if err == nil {
+		lines := strings.Split(string(input), "\n")
+		for _, line := range lines {
+			mots := strings.Fields(ligne)
+			for _, mot := range mots {
+				if mot == cleVal {
+					enrg = line
+					break
+				}
+			}
+			if enrg != "" {
+				break
+			}
+		}
+	}
+	return enrg, err
+}
+
 // Ecriture sur le fichier log
 func PrintLog(message string) {
 	if *TraceLog {
