@@ -137,6 +137,21 @@ func ReadFileForValue(fileName string, cleVal string) (string, error) {
 	return enrg, err
 }
 
+// ReadFileInTab(...) lire un fichier 'fileName' dans un tableau
+func ReadFileInTab(fileName string, cleVal string) ([]string, error) {
+	var enrgs []string
+	input, err := ioutil.ReadFile(fileName)
+	if err == nil {
+		lines := strings.Split(string(input), "\n")
+		for _, line := range lines {
+			if strings.Contains(line, cleVal) {
+				enrgs = append(enrgs, line)
+			}
+		}
+	}
+	return enrgs, err
+}
+
 // Ecriture sur le fichier log
 func PrintLog(message string) {
 	if *TraceLog {
