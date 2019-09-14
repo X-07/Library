@@ -3,7 +3,7 @@ package tsIO
 import "strconv"
 
 // MiseEnFormeByte(nb octets)
-func MiseEnFormeByte(bps int) string {
+func MiseEnFormeByte(bps int64) string {
 	var unit string
 	var speed float64
 	var xSpeed string
@@ -41,14 +41,14 @@ func MiseEnFormeByte(bps int) string {
 		}
 	} else {
 		unit = "o"
-		xSpeed = strconv.Itoa(bps)
+		xSpeed = string(bps)
 	}
 
 	return xSpeed + unit
 }
 
 // MiseEnFormeBit(nb bits)
-func MiseEnFormeBit(bps int) string {
+func MiseEnFormeBit(bps int64) string {
 	var unit string
 	var speed float64
 	var xSpeed string
@@ -86,7 +86,7 @@ func MiseEnFormeBit(bps int) string {
 		}
 	} else {
 		unit = "bit/s"
-		xSpeed = strconv.Itoa(bps)
+		xSpeed = string(bps)
 	}
 
 	return xSpeed + unit
