@@ -171,3 +171,10 @@ func Trace(message string) {
 	PrintLog(message + "\n")
 	PrintConsole(message)
 }
+
+// Ecriture sur la console
+func FmtConsole(a ...interface{}) {
+	if *TraceConsole {
+		fmt.Println(a...)
+	}
+}
