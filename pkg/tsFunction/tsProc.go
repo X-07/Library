@@ -41,7 +41,7 @@ func MiseEnFormeByte(bps int64) string {
 		}
 	} else {
 		unit = "o"
-		xSpeed = string(bps)
+		xSpeed = strconv.FormatInt(bps, 10)
 	}
 
 	return xSpeed + unit
@@ -86,7 +86,7 @@ func MiseEnFormeBit(bps int64) string {
 		}
 	} else {
 		unit = "bit/s"
-		xSpeed = string(bps)
+		xSpeed = strconv.FormatInt(bps, 10)
 	}
 
 	return xSpeed + unit
