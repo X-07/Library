@@ -3,7 +3,6 @@ package tsIO
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -172,7 +171,6 @@ func Trace(message ...interface{}) {
 	PrintLog(fmt.Sprintln(message...))
 	PrintConsole(message...)
 }
-
 
 // Ecriture sur la console
 //func PrintConsole(message string) {
