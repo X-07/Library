@@ -3,6 +3,7 @@ package tsIO
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -160,21 +161,35 @@ func PrintLog(message string) {
 }
 
 // Ecriture sur la console
-func PrintConsole(message string) {
+func PrintConsole(message ...interface{}) {
 	if *TraceConsole {
-		fmt.Println(message)
+		fmt.Println(message...)
 	}
 }
 
 // Trace l'info
-func Trace(message string) {
-	PrintLog(message + "\n")
-	PrintConsole(message)
+func Trace(message ...interface{}) {
+	PrintLog(fmt.Sprintln(message...))
+	PrintConsole(message...)
 }
 
+
 // Ecriture sur la console
-func FmtConsole(a ...interface{}) {
-	if *TraceConsole {
-		fmt.Println(a...)
-	}
-}
+//func PrintConsole(message string) {
+//	if *TraceConsole {
+//		fmt.Println(message)
+//	}
+//}
+
+// Trace l'info
+//func Trace(message string) {
+//	PrintLog(message + "\n")
+//	PrintConsole(message)
+//}
+
+// Ecriture sur la console
+//func FmtConsole(a ...interface{}) {
+//	if *TraceConsole {
+//		fmt.Println(a...)
+//	}
+//}
