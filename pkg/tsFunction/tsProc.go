@@ -1,4 +1,4 @@
-package tsIO
+package tsFunction
 
 import "strconv"
 
@@ -107,4 +107,32 @@ func MiseEnFormeGiga(val int64) string {
 		xResult = strconv.FormatFloat(result, 'f', 2, 64) // 2 decimale
 	}
 	return xResult
+}
+
+// SliceIntUniq removes duplicate values in given slice
+func SliceIntUniq(s []int) []int {
+	for i1 := 0; i1 < len(s); i1++ {
+		for i2 := i1 + 1; i2 < len(s); i2++ {
+			if s[i1] == s[i2] {
+				// delete
+				s = append(s[:i2], s[i2+1:]...)
+				i2--
+			}
+		}
+	}
+	return s
+}
+
+// SliceStringUniq removes duplicate values in given slice
+func SliceStringUniq(s []string) []string {
+	for i1 := 0; i1 < len(s); i1++ {
+		for i2 := i1 + 1; i2 < len(s); i2++ {
+			if s[i1] == s[i2] {
+				// delete
+				s = append(s[:i2], s[i2+1:]...)
+				i2--
+			}
+		}
+	}
+	return s
 }
