@@ -1,4 +1,4 @@
-package tsIO
+package tsFunction
 
 import (
 	"encoding/json"
