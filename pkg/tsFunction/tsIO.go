@@ -64,6 +64,31 @@ func OpenLOG(ficLog string) (*os.File, error) {
 	return fileLog, err
 }
 
+//Creation du fichier 'fic' s'il n'existe pas, ouverture
+func OpenFileRW(fic string) (*os.File, error) {
+	var err error = nil
+	_, err = CreateFileIfNotExists(fic)
+	if err == nil {
+		fileLog, err = os.OpenFile(fic, os.O_APPEND|os.O_RDWR, 0777)
+	}
+	return fileLog, err
+}
+
+//Creation du fichier 'fic' s'il n'existe pas, ouverture
+func OpenNewFileRW(fic string) (*os.File, error) {
+	var err error = nil
+	if FileExists(fic) {
+		err = os.Remove(fic)
+	}
+	if err == nil {
+		_, err = CreateFileIfNotExists(fic)
+		if err == nil {
+			fileLog, err = os.OpenFile(fic, os.O_RDWR, 0777)
+		}
+	}
+	return fileLog, err
+}
+
 //Ecriture dans un fichier de données "struct" au format json
 func WriteJsonFile(filename string, data interface{}) error {
 	fileContent, err := json.Marshal(data)
