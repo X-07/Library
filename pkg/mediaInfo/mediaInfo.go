@@ -172,7 +172,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 
 	out, err := exec.Command(mediainfo_cmd, "--Output=XML", fileName).Output()
 	if err != nil {
-		panic(fmt.Sprint("Command: mediainfo", err))
+		panic(fmt.Sprint("Command: mediainfo ", err))
 	}
 	var result mediainfoXml
 	err = xml.Unmarshal(out, &result) //DECODAGE
