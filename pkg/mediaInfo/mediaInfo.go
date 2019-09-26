@@ -3,6 +3,7 @@ package mediaInfo
 import (
 	"encoding/xml"
 	"fmt"
+	"math"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -73,6 +74,7 @@ type mediainfoXml struct {
 			DisplayAspectRatio       string `xml:"Display_aspect_ratio"`
 			FrameRateMode            string `xml:"Frame_rate_mode"`
 			FrameRate                string `xml:"Frame_rate"`
+			OriginalFrameRate        string `xml:"Original_frame_rate"`
 			MinimumFrameRate         string `xml:"Minimum_frame_rate"`
 			MaximumFrameRate         string `xml:"Maximum_frame_rate"`
 			ColorSpace               string `xml:"Color_space"`
@@ -200,7 +202,11 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			video.Width = extractSize(track.Width)
 			video.Height = extractSize(track.Width)
 			video.FrameRateMode = track.FrameRateMode
-			video.FrameRate = extractFrameRate(track.FrameRate)
+			if track.FrameRate != "" {
+				video.FrameRate = extractFrameRate(track.FrameRate)
+			} else if track.OverallBitRate != "" {
+				video.FrameRate = extractFrameRate(track.OverallBitRate)
+			}
 			video.BitDepth = extractBitDepth(track.BitDepth)
 			video.Language = track.Language
 			mediaInfo.Video = append(mediaInfo.Video, video)
@@ -242,6 +248,8 @@ func extractFileSize(size string) float64 {
 	if mots[1] == "MiB" {
 		val /= 1024
 	}
+	val = math.RoundToEven(val*10) / 10
+
 	return val
 }
 
