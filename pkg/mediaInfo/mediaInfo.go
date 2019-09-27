@@ -20,21 +20,59 @@ var start time.Time
 var traceConsole = false //trace sur la console
 var appRep string
 
-// init() : initialisation du programme
-func init() {
-	start = time.Now()
+// liste des extentions contenant des médias
+var containers = map[string]bool{
+	".mkv":  true,
+	".mka":  true,
+	".mks":  true,
+	".ogg":  true,
+	".ogm":  true,
+	".avi":  true,
+	".wav":  true,
+	".mpeg": true,
+	".mpg":  true,
+	".vob":  true,
+	".mp4":  true,
+	".mpgv": true,
+	".mpv":  true,
+	".m1v":  true,
+	".m2v":  true,
+	".mp2":  true,
+	".mp3":  true,
+	".asf":  true,
+	".wma":  true,
+	".wmv":  true,
+	".qt":   true,
+	".mov":  true,
+	".rm":   true,
+	".rmvb": true,
+	".ra":   true,
+	".ifo":  true,
+	".ac3":  true,
+	".dts":  true,
+	".aac":  true,
+	".ape":  true,
+	".mac":  true,
+	".flac": true,
+	".dat":  true,
+	".aiff": true,
+	".aifc": true,
+	".au":   true,
+	".iff":  true,
+	".paf":  true,
+	".sd2":  true,
+	".irca": true,
+	".w64":  true,
+	".mat":  true,
+	".pvf":  true,
+	".xi":   true,
+	".sds":  true,
+	".avr":  true,
+	".m4v":  true,
 
-	tsIO.TraceConsole = &traceConsole //trace sur la console
-
-	var err error
-	// récupère le répertoire de l'application
-	appRep, err = tsIO.GetAppPath()
-	if err != nil {
-		panic(fmt.Sprint("  init > ", err))
-	}
-	tsIO.PrintConsole("App path : " + appRep)
 }
 
+// structure en retour de l'appel à mediainfo
 type mediainfoXml struct {
 	XMLName xml.Name `xml:"Mediainfo"`
 	Text    string   `xml:",chardata"`
@@ -101,6 +139,7 @@ type mediainfoXml struct {
 	} `xml:"File"`
 }
 
+// structure MediaInfo
 type MediaInfo_struct struct {
 	General General_struct
 	Video   []Video_struct
@@ -108,6 +147,7 @@ type MediaInfo_struct struct {
 	Text    []Text_struct
 }
 
+// structure Générale
 type General_struct struct {
 	Format         string  // MPEG-4
 	FormatVersion  string  // Version 2
@@ -116,6 +156,7 @@ type General_struct struct {
 	OverallBitRate int64   // 5098 ( < 5 098 Kbps)
 }
 
+// structure Vidéo
 type Video_struct struct {
 	Format        string  // AVC
 	FormatInfo    string  // Advanced Video Codec
@@ -131,6 +172,7 @@ type Video_struct struct {
 	Language      string  // English
 }
 
+// structure Audio
 type Audio_struct struct {
 	Format           string // AC-3
 	FormatInfo       string // Audio Coding 3
@@ -147,6 +189,7 @@ type Audio_struct struct {
 	Language         string  // English
 }
 
+// structure Channel
 type ChannelDetail_struct struct {
 	FrontL bool
 	FrontC bool
@@ -156,11 +199,38 @@ type ChannelDetail_struct struct {
 	Sub    bool
 }
 
+// structure sous-titre
 type Text_struct struct {
 	Format      string // UTF-8
 	CodecID     string // S_TEXT/UTF8
 	CodecIDInfo string // UTF-8 Plain Text
 	Language    string // English
+}
+
+// init() : initialisation du composant
+func init() {
+	start = time.Now()
+
+	tsIO.TraceConsole = &traceConsole //trace sur la console
+
+	var err error
+	// récupère le répertoire de l'application
+	appRep, err = tsIO.GetAppPath()
+	if err != nil {
+		panic(fmt.Sprint("  init > ", err))
+	}
+	tsIO.PrintConsole("App path : " + appRep)
+}
+
+
+// IsMediaFile() - détemine si le suffixe du fichier correspond à un media (audio ou vidéo)
+func IsMediaFile(ext string) bool {
+	result := false
+	if _, ok := containers[strings.ToLower(ext)]; ok {
+		result = true
+	}
+
+	return result
 }
 
 //
