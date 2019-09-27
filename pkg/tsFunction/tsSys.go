@@ -1,20 +1,15 @@
-package main
+package tsFunction
 
 import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
-
-	tsIO "tsFunction"
 )
-
-var appRep string
 
 type file_struct struct {
 	CpuN      string
@@ -23,84 +18,6 @@ type file_struct struct {
 	ChargeIrq int64
 	ChargeSys int64
 	Total     int64
-}
-
-// init() : initialisation du programme
-func init() {
-	tsIO.TraceConsole = &traceConsole //trace sur la console
-
-	var err error
-	// récupère le répertoire de l'application
-	appRep, err = tsIO.GetAppPath()
-	if err != nil {
-		tsIO.PrintConsole("  init:getAppPath > ", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("App path : " + appRep)
-
-	var nm_tool_cmd string
-	nm_tool_cmd, err = exec.LookPath("nm-tool")
-	if err != nil {
-		tsIO.PrintConsole("  init > could not find path to 'nm-tool':\n", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("-- found 'nm-tool' command: ", nm_tool_cmd)
-
-	var cat_cmd string
-	cat_cmd, err = exec.LookPath("cat")
-	if err != nil {
-		tsIO.PrintConsole("  init > could not find path to 'cat':\n", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("-- found 'cat' command: ", cat_cmd)
-
-	var ps_cmd string
-	ps_cmd, err = exec.LookPath("ps")
-	if err != nil {
-		tsIO.PrintConsole("  init > could not find path to 'ps':\n", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("-- found 'ps' command: ", ps_cmd)
-
-	var pgrep_cmd string
-	pgrep_cmd, err = exec.LookPath("pgrep")
-	if err != nil {
-		tsIO.PrintConsole("  init > could not find path to 'pgrep':\n", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("-- found 'pgrep' command: ", pgrep_cmd)
-
-	var notify_send_cmd string
-	notify_send_cmd, err = exec.LookPath("notify-send")
-	if err != nil {
-		tsIO.PrintConsole("  init > could not find path to 'notify-send':\n", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("-- found 'notify-send' command: ", notify_send_cmd)
-
-	var ifconfig_cmd string
-	ifconfig_cmd, err = exec.LookPath("ifconfig")
-	if err != nil {
-		tsIO.PrintConsole("  init > could not find path to 'ifconfig':\n", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("-- found 'ifconfig' command: ", ifconfig_cmd)
-
-	var nmcli_cmd string
-	nmcli_cmd, err = exec.LookPath("nmcli")
-	if err != nil {
-		tsIO.PrintConsole("  init > could not find path to 'nmcli':\n", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("-- found 'nmcli' command: ", nmcli_cmd)
-
-	var shutdown_cmd string
-	shutdown_cmd, err = exec.LookPath("shutdown")
-	if err != nil {
-		tsIO.PrintConsole("  init > could not find path to 'shutdown':\n", err)
-		os.Exit(1)
-	}
-	tsIO.PrintConsole("-- found 'shutdown' command: ", shutdown_cmd)
 }
 
 // nm-tool
@@ -160,7 +77,7 @@ func GetConnexion() string {
 	matches := re.FindStringSubmatch(out.String())
 	if len(matches) == 2 {
 		connect = matches[1]
-		tsIO.PrintConsole("device : " + matches[1])
+		PrintConsole("device : " + matches[1])
 	} else {
 		connect = ""
 	}
@@ -215,7 +132,7 @@ func ReadStatsUp(connect string) int64 {
 // GetDataCPU() : recherche les infos du CPU
 func GetDataCPU(core string) file_struct {
 	var file file_struct
-	enrg, err := tsIO.ReadFileForValue("/proc/stat", "cpu"+core)
+	enrg, err := ReadFileForValue("/proc/stat", "cpu"+core)
 	if err != nil {
 		panic(fmt.Sprint("tsSys - getDataCPU > ReadFileForValue: ", err))
 	}
@@ -276,7 +193,7 @@ func GetDataAllDisk() (float64, float64) {
 			hddAll = append(hddAll, disk)
 		}
 	}
-	tsIO.PrintConsole("hddAll = ", hddAll)
+	PrintConsole("hddAll = ", hddAll)
 
 	//Récupérer la taille du secteur
 	sectorSize := []int64{}
@@ -293,7 +210,7 @@ func GetDataAllDisk() (float64, float64) {
 			sectorSize = append(sectorSize, 512)
 		}
 	}
-	tsIO.PrintConsole("sectorSize = ", sectorSize)
+	PrintConsole("sectorSize = ", sectorSize)
 
 	for idx, hdd := range hddAll {
 		var lec, ecr int64
