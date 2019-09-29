@@ -69,7 +69,6 @@ var containers = map[string]bool{
 	".sds":  true,
 	".avr":  true,
 	".m4v":  true,
-
 }
 
 // structure en retour de l'appel à mediainfo
@@ -222,7 +221,6 @@ func init() {
 	tsIO.PrintConsole("App path : " + appRep)
 }
 
-
 // IsMediaFile() - détemine si le suffixe du fichier correspond à un media (audio ou vidéo)
 func IsMediaFile(ext string) bool {
 	result := false
@@ -367,16 +365,21 @@ func extractDuration(duration string) int64 {
 
 // extractBitRate() return bitRate en Kbps (5 098 Kbps  --> 5098)
 func extractBitRate(bitRate string) int64 {
-	mots := strings.Fields(bitRate)
-	var tmp string
-	for _, val := range mots[:len(mots)-1] {
-		tmp += val
-	}
-	result, err := strconv.ParseInt(tmp, 10, 64)
-	if err != nil {
-		panic(fmt.Sprint("  extractBitRate > ParseInt ", err))
+	var result int64 = 0
+	if bitRate != "" {
+		mots := strings.Fields(bitRate)
+		var tmp string
+		for _, val := range mots[:len(mots)-1] {
+			tmp += val
+		}
+		var err error
+		result, err = strconv.ParseInt(tmp, 10, 64)
+		if err != nil {
+			panic(fmt.Sprint("  extractBitRate > ParseInt ", err))
+		}
 	}
 	return result
+
 }
 
 // extractFrameRate() return frameRate in fps (23.976 fps --> 23.976)
