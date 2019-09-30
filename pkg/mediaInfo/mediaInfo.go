@@ -13,7 +13,7 @@ import (
 	tsIO "tsFunction"
 )
 
-const version = 0.1
+const version = 0.5
 
 var start time.Time
 
@@ -153,6 +153,8 @@ type General_struct struct {
 	FileSize       float64 // 1.43 ( < 1.43 GiB)
 	Duration       int64   // 2413 (en sec < 40mn 13s)
 	OverallBitRate int64   // 5098 ( < 5 098 Kbps)
+	AudioMultiPiste MultiPiste_struct
+	TextMultiPiste  MultiPiste_struct
 }
 
 // structure Vidéo
@@ -206,6 +208,13 @@ type Text_struct struct {
 	Language    string // English
 }
 
+// structure sous-titre
+type MultiPiste_struct struct {
+	Format      string // UTF-8 / UTF-8
+	Language    string // English / French
+	NoFrench	bool
+}
+
 // init() : initialisation du composant
 func init() {
 	start = time.Now()
@@ -231,7 +240,7 @@ func IsMediaFile(ext string) bool {
 	return result
 }
 
-//
+// GetMediaInfo() : récupère les infos du média dans MediaInfo_struct
 func GetMediaInfo(fileName string) MediaInfo_struct {
 	var mediainfo_cmd string
 	mediainfo_cmd, err := exec.LookPath("mediainfo")
@@ -303,93 +312,136 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			mediaInfo.Text = append(mediaInfo.Text, text)
 		}
 	}
+	if len(mediaInfo.Audio) > 1 {
+		var lang []string
+		var format []string
+		for _, audio := range mediaInfo.Audio {
+			format = append(format, audio.Format)
+			lang = append(lang, audio.Language)
+			if text.Language != "French" {
+				mediaInfo.General.AudioMultiPiste.NoFrench = true
+			}
+		}
+		mediaInfo.General.AudioMultiPiste.Format = strings.Join(format, " / ")
+		mediaInfo.General.AudioMultiPiste.Language = strings.Join(lang, " / ")
+	}
+
+	if len(mediaInfo.Text) > 1 {
+		var lang []string
+		var format []string
+		for _, text := range mediaInfo.Text {
+			format = append(format, text.Format)
+			lang = append(lang, text.Language)
+			if text.Language != "French" {
+				mediaInfo.General.TextMultiPiste.NoFrench = true
+			}
+		}
+		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
+		mediaInfo.General.TextMultiPiste.Language = strings.Join(lang, " / ")
+	}
+	
 	return mediaInfo
 }
 
 // extractFileSize() return size in GiB (1.43 GiB --> 1.43  ou  785 MiB --> 0.766)
 func extractFileSize(size string) float64 {
-	mots := strings.Fields(size)
-	val, err := strconv.ParseFloat(mots[0], 64)
-	if err != nil {
-		panic(fmt.Sprint("  extractFileSize > ParseFloat ", err))
-	}
-	if mots[1] == "MiB" {
-		val /= 1024
-	}
-	val = math.RoundToEven(val*10) / 10
+	if size == "" {
+		return 0.0
+	} else {
+		mots := strings.Fields(size)
+		val, err := strconv.ParseFloat(mots[0], 64)
+		if err != nil {
+			panic(fmt.Sprint("  extractFileSize > ParseFloat ", err))
+		}
+		if mots[1] == "MiB" {
+			val /= 1024
+		}
+		val = math.RoundToEven(val*10) / 10
 
-	return val
+		return val
+	}
 }
 
 // extractSize() return size in pixel (1 920 pixels --> 1920)
 func extractSize(size string) int64 {
-	mots := strings.Fields(size)
-	var tmp string
-	for _, val := range mots[:len(mots)-1] {
-		tmp += val
+	if size == "" {
+		return 0
+	} else {
+		mots := strings.Fields(size)
+		var tmp string
+		for _, val := range mots[:len(mots)-1] {
+			tmp += val
+		}
+		result, err := strconv.ParseInt(tmp, 10, 64)
+		if err != nil {
+			panic(fmt.Sprint("  extractSize > ParseInt ", err))
+		}
+		return result
 	}
-	result, err := strconv.ParseInt(tmp, 10, 64)
-	if err != nil {
-		panic(fmt.Sprint("  extractSize > ParseInt ", err))
-	}
-	return result
 }
 
 // extractDuration() return durée in sec (40mn 13s --> 2413)
 func extractDuration(duration string) int64 {
-	mots := strings.Fields(duration)
-	var result int64
-	result = 0
-	for _, val := range mots {
-		var re = regexp.MustCompile(`([0-9]*)([a-zA-Z]*)`)
-		matches := re.FindStringSubmatch(val)
-		if len(matches) == 3 {
-			tmp, err := strconv.ParseInt(matches[1], 10, 64)
-			if err != nil {
-				panic(fmt.Sprint("  extractDuration > ParseInt ", err))
+	if duration == "" {
+		return 0
+	} else {
+		mots := strings.Fields(duration)
+		var result int64
+		result = 0
+		for _, val := range mots {
+			var re = regexp.MustCompile(`([0-9]*)([a-zA-Z]*)`)
+			matches := re.FindStringSubmatch(val)
+			if len(matches) == 3 {
+				tmp, err := strconv.ParseInt(matches[1], 10, 64)
+				if err != nil {
+					panic(fmt.Sprint("  extractDuration > ParseInt ", err))
+				}
+				switch matches[2] {
+				case "h":
+					result += tmp * 3600
+				case "mn":
+					result += tmp * 60
+				case "s":
+					result += tmp
+				}
+			} else {
+				panic(fmt.Sprint("  extractDuration > regexp ", val))
 			}
-			switch matches[2] {
-			case "h":
-				result += tmp * 3600
-			case "mn":
-				result += tmp * 60
-			case "s":
-				result += tmp
-			}
-		} else {
-			panic(fmt.Sprint("  extractDuration > regexp ", val))
 		}
+		return result
 	}
-	return result
 }
 
 // extractBitRate() return bitRate en Kbps (5 098 Kbps  --> 5098)
 func extractBitRate(bitRate string) int64 {
-	var result int64 = 0
-	if bitRate != "" {
+	if bitRate == "" {
+		return 0
+	} else {
 		mots := strings.Fields(bitRate)
 		var tmp string
 		for _, val := range mots[:len(mots)-1] {
 			tmp += val
 		}
-		var err error
-		result, err = strconv.ParseInt(tmp, 10, 64)
+		result, err := strconv.ParseInt(tmp, 10, 64)
 		if err != nil {
 			panic(fmt.Sprint("  extractBitRate > ParseInt ", err))
 		}
+		return result
 	}
-	return result
-
 }
 
 // extractFrameRate() return frameRate in fps (23.976 fps --> 23.976)
 func extractFrameRate(frame string) float64 {
-	mots := strings.Fields(frame)
-	val, err := strconv.ParseFloat(mots[0], 64)
-	if err != nil {
-		panic(fmt.Sprint("  extractFrameRate > ParseFloat ", err))
+	if frame == "" {
+		return 0.0
+	} else {
+		mots := strings.Fields(frame)
+		val, err := strconv.ParseFloat(mots[0], 64)
+		if err != nil {
+			panic(fmt.Sprint("  extractFrameRate > ParseFloat ", err))
+		}
+		return val
 	}
-	return val
 }
 
 // extractBitDepth() return bitDepth in bits (8 bits --> 8)
@@ -408,56 +460,65 @@ func extractBitDepth(bitDepth string) int64 {
 
 // extractChannel() return nb audio channel (6 channels --> 6)
 func extractChannel(channel string) int64 {
-	mots := strings.Fields(channel)
-	val, err := strconv.ParseInt(mots[0], 10, 64)
-	if err != nil {
-		panic(fmt.Sprint("  extractChannel > ParseInt ", err))
+	if channel == "" {
+		return 0
+	} else {
+		mots := strings.Fields(channel)
+		val, err := strconv.ParseInt(mots[0], 10, 64)
+		if err != nil {
+			panic(fmt.Sprint("  extractChannel > ParseInt ", err))
+		}
+		return val
 	}
-	return val
 }
 
 // getChannelDetail() // Front: L C R, Side: L R, LFE
 func getChannelDetail(channelPositions string) ChannelDetail_struct {
 	var channelDetail ChannelDetail_struct
-	lines := strings.Split(channelPositions, ",")
-	for _, val := range lines {
-		mots := strings.Fields(strings.TrimSpace(val))
-		switch mots[0] {
-		case "Front:":
-			for _, val := range mots[1:] {
-				switch val {
-				case "L":
-					channelDetail.FrontL = true
-				case "C":
-					channelDetail.FrontC = true
-				case "R":
-					channelDetail.FrontR = true
+	if channelPositions != "" {
+		lines := strings.Split(channelPositions, ",")
+		for _, val := range lines {
+			mots := strings.Fields(strings.TrimSpace(val))
+			switch mots[0] {
+			case "Front:":
+				for _, val := range mots[1:] {
+					switch val {
+					case "L":
+						channelDetail.FrontL = true
+					case "C":
+						channelDetail.FrontC = true
+					case "R":
+						channelDetail.FrontR = true
+					}
 				}
-			}
-		case "Side:":
-			for _, val := range mots[1:] {
-				switch val {
-				case "L":
-					channelDetail.RearL = true
-				case "R":
-					channelDetail.RearR = true
+			case "Side:":
+				for _, val := range mots[1:] {
+					switch val {
+					case "L":
+						channelDetail.RearL = true
+					case "R":
+						channelDetail.RearR = true
+					}
 				}
+			case "LFE":
+				channelDetail.Sub = true
 			}
-		case "LFE":
-			channelDetail.Sub = true
+
 		}
-
 	}
-
 	return channelDetail
 }
 
 // extractSamplingRate() return sampling rate in Khz  (48.0 KHz --> 48.0)
 func extractSamplingRate(rate string) float64 {
-	mots := strings.Fields(rate)
-	val, err := strconv.ParseFloat(mots[0], 64)
-	if err != nil {
-		panic(fmt.Sprint("  extractSamplingRate > ParseFloat ", err))
+	if rate == "" {
+		return 0.0
+	} else {
+		mots := strings.Fields(rate)
+		val, err := strconv.ParseFloat(mots[0], 64)
+		if err != nil {
+			panic(fmt.Sprint("  extractSamplingRate > ParseFloat ", err))
+		}
+		return val
 	}
-	return val
 }
