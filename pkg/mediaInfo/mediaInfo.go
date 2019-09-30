@@ -148,11 +148,11 @@ type MediaInfo_struct struct {
 
 // structure Générale
 type General_struct struct {
-	Format         string  // MPEG-4
-	FormatVersion  string  // Version 2
-	FileSize       float64 // 1.43 ( < 1.43 GiB)
-	Duration       int64   // 2413 (en sec < 40mn 13s)
-	OverallBitRate int64   // 5098 ( < 5 098 Kbps)
+	Format          string  // MPEG-4
+	FormatVersion   string  // Version 2
+	FileSize        float64 // 1.43 ( < 1.43 GiB)
+	Duration        int64   // 2413 (en sec < 40mn 13s)
+	OverallBitRate  int64   // 5098 ( < 5 098 Kbps)
 	AudioMultiPiste MultiPiste_struct
 	TextMultiPiste  MultiPiste_struct
 }
@@ -210,9 +210,9 @@ type Text_struct struct {
 
 // structure sous-titre
 type MultiPiste_struct struct {
-	Format      string // UTF-8 / UTF-8
-	Language    string // English / French
-	NoFrench	bool
+	Format   string // UTF-8 / UTF-8
+	Language string // English / French
+	NoFrench bool
 }
 
 // init() : initialisation du composant
@@ -318,7 +318,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		for _, audio := range mediaInfo.Audio {
 			format = append(format, audio.Format)
 			lang = append(lang, audio.Language)
-			if text.Language != "French" {
+			if audio.Language != "French" {
 				mediaInfo.General.AudioMultiPiste.NoFrench = true
 			}
 		}
@@ -339,7 +339,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.TextMultiPiste.Language = strings.Join(lang, " / ")
 	}
-	
+
 	return mediaInfo
 }
 
