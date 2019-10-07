@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -148,6 +149,7 @@ type MediaInfo_struct struct {
 
 // structure Générale
 type General_struct struct {
+	Conteneur       string  // mkv
 	Format          string  // MPEG-4
 	FormatVersion   string  // Version 2
 	FileSize        float64 // 1.43 ( < 1.43 GiB)
@@ -339,6 +341,8 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.TextMultiPiste.Language = strings.Join(lang, " / ")
 	}
+
+	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
 
 	return mediaInfo
 }
