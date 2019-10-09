@@ -350,8 +350,10 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		mediaInfo.General.AudioMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.AudioMultiPiste.Language = strings.Join(lang, " / ")
 	} else {
-		mediaInfo.General.AudioMultiPiste.Format = mediaInfo.Audio[0].Format
-		mediaInfo.General.AudioMultiPiste.Language = mediaInfo.Audio[0].Language
+		if len(mediaInfo.Audio) == 1 {
+			mediaInfo.General.AudioMultiPiste.Format = mediaInfo.Audio[0].Format
+			mediaInfo.General.AudioMultiPiste.Language = mediaInfo.Audio[0].Language
+		}
 	}
 
 	if len(mediaInfo.Text) > 1 {
@@ -367,8 +369,10 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.TextMultiPiste.Language = strings.Join(lang, " / ")
 	} else {
-		mediaInfo.General.TextMultiPiste.Format = mediaInfo.Text[0].Format
-		mediaInfo.General.TextMultiPiste.Language = mediaInfo.Text[0].Language
+		if len(mediaInfo.Text) == 1 {
+			mediaInfo.General.TextMultiPiste.Format = mediaInfo.Text[0].Format
+			mediaInfo.General.TextMultiPiste.Language = mediaInfo.Text[0].Language
+		}
 	}
 
 	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
