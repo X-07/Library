@@ -161,7 +161,7 @@ type General_struct struct {
 	FormatVersion   string  // Version 2
 	FileSize        float64 // 1.43 ( < 1.43 GiB)
 	Duration        int64   // 2413 (en sec < 40mn 13s)
-	DurationAff     int64  // 40
+	DurationAff     int64   // 40
 	OverallBitRate  int64   // 5098 ( < 5 098 Kbps)
 	AudioMultiPiste MultiPiste_struct
 	TextMultiPiste  MultiPiste_struct
@@ -169,21 +169,21 @@ type General_struct struct {
 
 // structure Vidéo
 type Video_struct struct {
-	Format        string  // AVC
-	FormatInfo    string  // Advanced Video Codec
-	FormatProfile string  // High@L4.0
-	CodecID       string  // V_MPEG4/ISO/AVC
+	Format        string // AVC
+	FormatInfo    string // Advanced Video Codec
+	FormatProfile string // High@L4.0
+	CodecID       string // V_MPEG4/ISO/AVC
 	CodecIDInfo   string
 	CodecV        string
-	Duration      int64   // 2413 (en sec < 40mn 13s)
+	Duration      int64  // 2413 (en sec < 40mn 13s)
 	DurationAff   int64  // 40
-	BitRate       int64   // 4613 ( < 4 613 Kbps)
-	Width         int64   // 1920 ( < 1 920 pixels)
-	Height        int64   // 1080 ( < 1 080 pixels)
-	FrameRateMode string  // Constant/Variable
-	FrameRate     float64 // 23.976 ( < 23.976 fps)
-	BitDepth      int64   // 8 ( < 8 bits)
-	Language      string  // English
+	BitRate       int64  // 4613 ( < 4 613 Kbps)
+	Width         int64  // 1920 ( < 1 920 pixels)
+	Height        int64  // 1080 ( < 1 080 pixels)
+	FrameRateMode string // Constant/Variable
+	FrameRate     string // 23.976 ( < 23.976 fps)
+	BitDepth      int64  // 8 ( < 8 bits)
+	Language      string // English
 }
 
 // structure Audio
@@ -191,7 +191,7 @@ type Audio_struct struct {
 	Format           string // AC-3
 	FormatInfo       string // Audio Coding 3
 	CodecID          string // A_AC3
-	CodecIDInfo      string 
+	CodecIDInfo      string
 	CodecA           string
 	Duration         int64  // 2413 (en sec < 40mn 13s)
 	DurationAff      int64  // 40
@@ -200,7 +200,7 @@ type Audio_struct struct {
 	Channel          int64  // 6 ( < 6 channels)
 	ChannelPositions string // Front: L C R, Side: L R, LFE
 	ChannelDetail    ChannelDetail_struct
-	ChannelAff       string // 6ch: Surround
+	ChannelAff       string  // 6ch: Surround
 	SamplingRate     float64 // 48.0 ( < 48.0 KHz)
 	BitDepth         int64   // 16 ( < 16 bits)
 	CompressionMode  string  // Lossy
@@ -303,7 +303,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			if track.FrameRate != "" {
 				video.FrameRate = transcodeVideoFrameRate(extractFrameRate(track.FrameRate))
 			} else if track.OverallBitRate != "" {
-				video.FrameRate = transcodeVideoFrameRateextractFrameRate(track.OverallBitRate))
+				video.FrameRate = transcodeVideoFrameRate(extractFrameRate(track.OverallBitRate))
 			}
 			video.BitDepth = extractBitDepth(track.BitDepth)
 			video.Language = track.Language
@@ -587,49 +587,49 @@ func extractSamplingRate(rate string) float64 {
 
 func getCodecVideo(format string, formatProfile string, codecID string) string {
 	var codecV string
-//	if videoCodecHint == "divx 3 low" {
-//		codecV = "DivX 3 Low"
+	//	if videoCodecHint == "divx 3 low" {
+	//		codecV = "DivX 3 Low"
 	if codecID == "dx50" {
 		codecV = "DivX 5"
 	} else {
 		switch format {
-		case "XVID", "xvid" :
+		case "XVID", "xvid":
 			codecV = "XviD"
-		case "DIV3" :
+		case "DIV3":
 			codecV = "DivX 3"
-		case "DIV4" :
+		case "DIV4":
 			codecV = "DivX 4"
-		case "MPEGVIDEO" :  //&& codec == "mpeg-1v" {
+		case "MPEGVIDEO": //&& codec == "mpeg-1v" {
 			codecV = "MPEG-1"
-		case "MPEG-4VISUAL" :
+		case "MPEG-4VISUAL":
 			switch codecID {
-			case "mp42" :
+			case "mp42":
 				codecV = "MPEG-4"
-			case "divx" :
+			case "divx":
 				codecV = "DivX 4"
-			case "xvid" :
+			case "xvid":
 				codecV = "XviD"
-			default :
+			default:
 				codecV = "MPEG-4"
 			}
-		case "MPEG-4" :
+		case "MPEG-4":
 			codecV = format
-		case "AVC" :
+		case "AVC":
 			codecV = "X264"
 			mots := strings.Split(formatProfile, "@")
 			val := mots[1][1:]
-			if strings.Contains(val, ".") {
+			if !strings.Contains(val, ".") {
 				val += ".0"
 			}
 			codecV += " - " + val
-		case "hevc", "HEVC" :
+		case "hevc", "HEVC":
 			codecV = "X265"
-		default :
+		default:
 			codecV = "????"
 		}
+	}
 	return codecV
 }
-
 
 //### getCodeCodecAudio() - transcode le codec audio pour faciliter la lecture
 func getCodeCodecAudio(format string, codec string, codecHint string) string {
@@ -645,7 +645,6 @@ func getCodeCodecAudio(format string, codec string, codecHint string) string {
 	}
 	return codecA
 }
-
 
 //### transcodeVideoFrameRate - transcode le framerate vidéo pour faciliter la lecture
 func transcodeVideoFrameRate(frameRate float64) string {
@@ -665,4 +664,3 @@ func transcodeVideoFrameRate(frameRate float64) string {
 	}
 	return result
 }
-
