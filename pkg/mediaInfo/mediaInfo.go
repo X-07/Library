@@ -21,6 +21,13 @@ var start time.Time
 var traceConsole = false //trace sur la console
 var appRep string
 
+const CHANNEl1 = "1ch: Mono"
+const CHANNEl2 = "2ch: Stereo"
+const CHANNEl3 = "3ch: Stereo 2.1"
+const CHANNEl5 = "5ch: Surround"
+const CHANNEl6 = "6ch: Surround"
+const CHANNEl8 = "8ch: Surround +"
+
 // liste des extentions contenant des médias
 var containers = map[string]bool{
 	".mkv":  true,
@@ -154,6 +161,7 @@ type General_struct struct {
 	FormatVersion   string  // Version 2
 	FileSize        float64 // 1.43 ( < 1.43 GiB)
 	Duration        int64   // 2413 (en sec < 40mn 13s)
+	DurationAff     int64  // 40
 	OverallBitRate  int64   // 5098 ( < 5 098 Kbps)
 	AudioMultiPiste MultiPiste_struct
 	TextMultiPiste  MultiPiste_struct
@@ -165,7 +173,10 @@ type Video_struct struct {
 	FormatInfo    string  // Advanced Video Codec
 	FormatProfile string  // High@L4.0
 	CodecID       string  // V_MPEG4/ISO/AVC
+	CodecIDInfo   string
+	CodecV        string
 	Duration      int64   // 2413 (en sec < 40mn 13s)
+	DurationAff   int64  // 40
 	BitRate       int64   // 4613 ( < 4 613 Kbps)
 	Width         int64   // 1920 ( < 1 920 pixels)
 	Height        int64   // 1080 ( < 1 080 pixels)
@@ -180,12 +191,16 @@ type Audio_struct struct {
 	Format           string // AC-3
 	FormatInfo       string // Audio Coding 3
 	CodecID          string // A_AC3
+	CodecIDInfo      string 
+	CodecA           string
 	Duration         int64  // 2413 (en sec < 40mn 13s)
+	DurationAff      int64  // 40
 	BitRateMode      string // Constant/Variable
 	BitRate          int64  // 384 ( < 384 Kbps)
-	ChannelS         int64  // 6 ( < 6 channels)
+	Channel          int64  // 6 ( < 6 channels)
 	ChannelPositions string // Front: L C R, Side: L R, LFE
 	ChannelDetail    ChannelDetail_struct
+	ChannelAff       string // 6ch: Surround
 	SamplingRate     float64 // 48.0 ( < 48.0 KHz)
 	BitDepth         int64   // 16 ( < 16 bits)
 	CompressionMode  string  // Lossy
@@ -268,6 +283,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			general.FormatVersion = track.FormatVersion
 			general.FileSize = extractFileSize(track.FileSize)
 			general.Duration = extractDuration(track.Duration)
+			general.DurationAff = general.Duration / 60
 			general.OverallBitRate = extractBitRate(track.OverallBitRate)
 			mediaInfo.General = general
 		case "Video":
@@ -276,15 +292,18 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			video.FormatInfo = track.FormatInfo
 			video.FormatProfile = track.FormatProfile
 			video.CodecID = track.CodecID
+			video.CodecIDInfo = track.CodecIDInfo
+			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.CodecID)
 			video.Duration = extractDuration(track.Duration)
+			video.DurationAff = video.Duration / 60
 			video.BitRate = extractBitRate(track.BitRate)
 			video.Width = extractSize(track.Width)
-			video.Height = extractSize(track.Width)
+			video.Height = extractSize(track.Height)
 			video.FrameRateMode = track.FrameRateMode
 			if track.FrameRate != "" {
-				video.FrameRate = extractFrameRate(track.FrameRate)
+				video.FrameRate = transcodeVideoFrameRate(extractFrameRate(track.FrameRate))
 			} else if track.OverallBitRate != "" {
-				video.FrameRate = extractFrameRate(track.OverallBitRate)
+				video.FrameRate = transcodeVideoFrameRateextractFrameRate(track.OverallBitRate))
 			}
 			video.BitDepth = extractBitDepth(track.BitDepth)
 			video.Language = track.Language
@@ -294,12 +313,16 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			audio.Format = track.Format
 			audio.FormatInfo = track.FormatInfo
 			audio.CodecID = track.CodecID
+			audio.CodecIDInfo = track.CodecIDInfo
+			audio.CodecA = getCodeCodecAudio(audio.FormatInfo, audio.CodecID, audio.CodecIDInfo)
 			audio.Duration = extractDuration(track.Duration)
+			audio.DurationAff = audio.Duration / 60
 			audio.BitRateMode = track.BitRateMode
 			audio.BitRate = extractBitRate(track.BitRate)
-			audio.ChannelS = extractChannel(track.ChannelS)
+			audio.Channel = extractChannel(track.ChannelS)
 			audio.ChannelPositions = track.ChannelPositions
 			audio.ChannelDetail = getChannelDetail(track.ChannelPositions)
+			audio.ChannelAff = getChannelAff(audio.Channel)
 			audio.SamplingRate = extractSamplingRate(track.SamplingRate)
 			audio.BitDepth = extractBitDepth(track.BitDepth)
 			audio.CompressionMode = track.CompressionMode
@@ -326,6 +349,9 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		}
 		mediaInfo.General.AudioMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.AudioMultiPiste.Language = strings.Join(lang, " / ")
+	} else {
+		mediaInfo.General.AudioMultiPiste.Format = mediaInfo.Audio[0].Format
+		mediaInfo.General.AudioMultiPiste.Language = mediaInfo.Audio[0].Language
 	}
 
 	if len(mediaInfo.Text) > 1 {
@@ -340,6 +366,9 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		}
 		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.TextMultiPiste.Language = strings.Join(lang, " / ")
+	} else {
+		mediaInfo.General.TextMultiPiste.Format = mediaInfo.Text[0].Format
+		mediaInfo.General.TextMultiPiste.Language = mediaInfo.Text[0].Language
 	}
 
 	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
@@ -513,6 +542,28 @@ func getChannelDetail(channelPositions string) ChannelDetail_struct {
 	return channelDetail
 }
 
+//### getChannelAff() - transcode les canaux audio pour faciliter la lecture
+func getChannelAff(channel int64) string {
+	var retour string
+	switch channel {
+	case 1:
+		retour = CHANNEl1 // "1ch: Mono"
+	case 2:
+		retour = CHANNEl2 // "2ch: Stéréo"
+	case 3:
+		retour = CHANNEl3 // "3ch: Stéréo 2.1"
+	case 5:
+		retour = CHANNEl5 // "5ch: Surround"
+	case 6:
+		retour = CHANNEl6 // "6ch: Surround"
+	case 8:
+		retour = CHANNEl8 // "8ch: Surround +"
+	default:
+		retour = strconv.FormatInt(channel, 10)
+	}
+	return retour
+}
+
 // extractSamplingRate() return sampling rate in Khz  (48.0 KHz --> 48.0)
 func extractSamplingRate(rate string) float64 {
 	if rate == "" {
@@ -526,3 +577,92 @@ func extractSamplingRate(rate string) float64 {
 		return val
 	}
 }
+
+//### getCodecVideo() - transcode le codec vidéo pour faciliter la lecture
+//		Format: 'AVC'
+//		FormatInfo: 'Advanced Video Codec'
+//		FormatProfile: 'High@L4.1'
+//		CodecID: 'V_MPEG4/ISO/AVC'
+//		CodecIDInfo
+
+func getCodecVideo(format string, formatProfile string, codecID string) string {
+	var codecV string
+//	if videoCodecHint == "divx 3 low" {
+//		codecV = "DivX 3 Low"
+	if codecID == "dx50" {
+		codecV = "DivX 5"
+	} else {
+		switch format {
+		case "XVID", "xvid" :
+			codecV = "XviD"
+		case "DIV3" :
+			codecV = "DivX 3"
+		case "DIV4" :
+			codecV = "DivX 4"
+		case "MPEGVIDEO" :  //&& codec == "mpeg-1v" {
+			codecV = "MPEG-1"
+		case "MPEG-4VISUAL" :
+			switch codecID {
+			case "mp42" :
+				codecV = "MPEG-4"
+			case "divx" :
+				codecV = "DivX 4"
+			case "xvid" :
+				codecV = "XviD"
+			default :
+				codecV = "MPEG-4"
+			}
+		case "MPEG-4" :
+			codecV = format
+		case "AVC" :
+			codecV = "X264"
+			mots := strings.Split(formatProfile, "@")
+			val := mots[1][1:]
+			if strings.Contains(val, ".") {
+				val += ".0"
+			}
+			codecV += " - " + val
+		case "hevc", "HEVC" :
+			codecV = "X265"
+		default :
+			codecV = "????"
+		}
+	return codecV
+}
+
+
+//### getCodeCodecAudio() - transcode le codec audio pour faciliter la lecture
+func getCodeCodecAudio(format string, codec string, codecHint string) string {
+	var codecA string
+	if codecHint == "mp3" || codec == "mpa1l3" {
+		codecA = "MP3"
+	} else if codecHint == "mp2" || codec == "mpa1l2" {
+		codecA = "MP2"
+	} else if strings.ToUpper(format) == "VORBIS" {
+		codecA = "Vorbis"
+	} else {
+		codecA = strings.ToUpper(format)
+	}
+	return codecA
+}
+
+
+//### transcodeVideoFrameRate - transcode le framerate vidéo pour faciliter la lecture
+func transcodeVideoFrameRate(frameRate float64) string {
+	result := "?"
+	if frameRate != 0 {
+		result = ""
+		frameRates := []float64{23.000, 23.976, 24.000, 25.000, 26.000, 29.970, 30.000, 48.000, 50.000, 60.000}
+		for _, val := range frameRates {
+			if val == frameRate {
+				result = strconv.FormatFloat(val, 'f', 3, 64) // 3 decimales
+				break
+			}
+		}
+		if result == "" {
+			result = strconv.FormatFloat(frameRate, 'f', 0, 64) + ".xxx"
+		}
+	}
+	return result
+}
+
