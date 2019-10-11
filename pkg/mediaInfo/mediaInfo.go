@@ -163,6 +163,10 @@ type General_struct struct {
 	Duration        int64   // 2413 (en sec < 40mn 13s)
 	DurationAff     int64   // 40
 	OverallBitRate  int64   // 5098 ( < 5 098 Kbps)
+	XFileSize       string  // 1.43 ( < 1.43 GiB)
+	XDuration       string  // 2413 (en sec < 40mn 13s)
+	XDurationAff    string  // 40
+	XOverallBitRate string  // 5098 ( < 5 098 Kbps)
 	AudioMultiPiste MultiPiste_struct
 	TextMultiPiste  MultiPiste_struct
 }
@@ -184,6 +188,12 @@ type Video_struct struct {
 	FrameRate     string // 23.976 ( < 23.976 fps)
 	BitDepth      int64  // 8 ( < 8 bits)
 	Language      string // English
+	XDuration     string // 2413 (en sec < 40mn 13s)
+	XDurationAff  string // 40
+	XBitRate      string // 4613 ( < 4 613 Kbps)
+	XWidth        string // 1920 ( < 1 920 pixels)
+	XHeight       string // 1080 ( < 1 080 pixels)
+	XBitDepth     string // 8 ( < 8 bits)
 }
 
 // structure Audio
@@ -205,6 +215,11 @@ type Audio_struct struct {
 	BitDepth         int64   // 16 ( < 16 bits)
 	CompressionMode  string  // Lossy
 	Language         string  // English
+	XDuration        string  // 2413 (en sec < 40mn 13s)
+	XDurationAff     string  // 40
+	XBitRate         string  // 384 ( < 384 Kbps)
+	XChannel         string  // 6 ( < 6 channels)
+	XSamplingRate    string  // 48.0 ( < 48.0 KHz)
 }
 
 // structure Channel
@@ -285,6 +300,10 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			general.Duration = extractDuration(track.Duration)
 			general.DurationAff = general.Duration / 60
 			general.OverallBitRate = extractBitRate(track.OverallBitRate)
+			general.XFileSize = fmt.Sprintf("%g", general.FileSize)
+			general.XDuration = fmt.Sprintf("%d", general.Duration)
+			general.XDurationAff = fmt.Sprintf("%d", general.DurationAff)
+			general.XOverallBitRate = fmt.Sprintf("%d", general.OverallBitRate)
 			mediaInfo.General = general
 		case "Video":
 			var video Video_struct
@@ -307,6 +326,12 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			}
 			video.BitDepth = extractBitDepth(track.BitDepth)
 			video.Language = track.Language
+			video.XDuration = fmt.Sprintf("%d", video.Duration)
+			video.XDurationAff = fmt.Sprintf("%d", video.DurationAff)
+			video.XBitRate = fmt.Sprintf("%d", video.BitRate)
+			video.XWidth = fmt.Sprintf("%d", video.Width)
+			video.XHeight = fmt.Sprintf("%d", video.Height)
+			video.XBitDepth = fmt.Sprintf("%d", video.BitDepth)
 			mediaInfo.Video = append(mediaInfo.Video, video)
 		case "Audio":
 			var audio Audio_struct
@@ -327,6 +352,11 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			audio.BitDepth = extractBitDepth(track.BitDepth)
 			audio.CompressionMode = track.CompressionMode
 			audio.Language = track.Language
+			audio.XDuration = fmt.Sprintf("%d", audio.Duration)
+			audio.XDurationAff = fmt.Sprintf("%d", audio.DurationAff)
+			audio.XBitRate = fmt.Sprintf("%d", audio.BitRate)
+			audio.XChannel = fmt.Sprintf("%d", audio.Channel)
+			audio.XSamplingRate = fmt.Sprintf("%g", audio.SamplingRate)
 			mediaInfo.Audio = append(mediaInfo.Audio, audio)
 		case "Text":
 			var text Text_struct
