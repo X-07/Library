@@ -220,6 +220,7 @@ type Audio_struct struct {
 	XBitRate         string  // 384 ( < 384 Kbps)
 	XChannel         string  // 6 ( < 6 channels)
 	XSamplingRate    string  // 48.0 ( < 48.0 KHz)
+	XBitDepth        string  // 16 ( < 16 bits)
 }
 
 // structure Channel
@@ -296,14 +297,10 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			var general General_struct
 			general.Format = track.Format
 			general.FormatVersion = track.FormatVersion
-			general.FileSize = extractFileSize(track.FileSize)
-			general.Duration = extractDuration(track.Duration)
-			general.DurationAff = general.Duration / 60
-			general.OverallBitRate = extractBitRate(track.OverallBitRate)
-			general.XFileSize = fmt.Sprintf("%g", general.FileSize)
-			general.XDuration = fmt.Sprintf("%d", general.Duration)
-			general.XDurationAff = fmt.Sprintf("%d", general.DurationAff)
-			general.XOverallBitRate = fmt.Sprintf("%d", general.OverallBitRate)
+			general.FileSize, general.XFileSize = extractFileSize(track.FileSize)
+			general.Duration, general.XDuration = extractDuration(track.Duration)
+			general.DurationAff, general.XDurationAff = extractDurationMN(general.Duration
+			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate)
 			mediaInfo.General = general
 		case "Video":
 			var video Video_struct
@@ -313,25 +310,19 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			video.CodecID = track.CodecID
 			video.CodecIDInfo = track.CodecIDInfo
 			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.CodecID)
-			video.Duration = extractDuration(track.Duration)
-			video.DurationAff = video.Duration / 60
-			video.BitRate = extractBitRate(track.BitRate)
-			video.Width = extractSize(track.Width)
-			video.Height = extractSize(track.Height)
+			video.Duration, video.XDuration = extractDuration(track.Duration)
+			video.DurationAff, video.XDurationAff = extractDurationMN(video.Duration)
+			video.BitRate, video.XBitRate = extractBitRate(track.BitRate)
+			video.Width, video.XWidth = extractSize(track.Width)
+			video.Height, video.XHeight = extractSize(track.Height)
 			video.FrameRateMode = track.FrameRateMode
 			if track.FrameRate != "" {
 				video.FrameRate = transcodeVideoFrameRate(extractFrameRate(track.FrameRate))
 			} else if track.OverallBitRate != "" {
 				video.FrameRate = transcodeVideoFrameRate(extractFrameRate(track.OverallBitRate))
 			}
-			video.BitDepth = extractBitDepth(track.BitDepth)
+			video.BitDepth, video.XBitDepth = extractBitDepth(track.BitDepth)
 			video.Language = track.Language
-			video.XDuration = fmt.Sprintf("%d", video.Duration)
-			video.XDurationAff = fmt.Sprintf("%d", video.DurationAff)
-			video.XBitRate = fmt.Sprintf("%d", video.BitRate)
-			video.XWidth = fmt.Sprintf("%d", video.Width)
-			video.XHeight = fmt.Sprintf("%d", video.Height)
-			video.XBitDepth = fmt.Sprintf("%d", video.BitDepth)
 			mediaInfo.Video = append(mediaInfo.Video, video)
 		case "Audio":
 			var audio Audio_struct
@@ -340,23 +331,18 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			audio.CodecID = track.CodecID
 			audio.CodecIDInfo = track.CodecIDInfo
 			audio.CodecA = getCodeCodecAudio(audio.FormatInfo, audio.CodecID, audio.CodecIDInfo)
-			audio.Duration = extractDuration(track.Duration)
-			audio.DurationAff = audio.Duration / 60
+			audio.Duration, audio.XDuration = extractDuration(track.Duration)
+			audio.DurationAff, audio.XDurationAff = extractDurationMN(audio.Duration)
 			audio.BitRateMode = track.BitRateMode
-			audio.BitRate = extractBitRate(track.BitRate)
-			audio.Channel = extractChannel(track.ChannelS)
+			audio.BitRate, audio.XBitRate = extractBitRate(track.BitRate)
+			audio.Channel, audio.XChannel = extractChannel(track.ChannelS)
 			audio.ChannelPositions = track.ChannelPositions
 			audio.ChannelDetail = getChannelDetail(track.ChannelPositions)
 			audio.ChannelAff = getChannelAff(audio.Channel)
-			audio.SamplingRate = extractSamplingRate(track.SamplingRate)
-			audio.BitDepth = extractBitDepth(track.BitDepth)
+			audio.SamplingRate, audio.XSamplingRate = extractSamplingRate(track.SamplingRate)
+			audio.BitDepth, audio.XBitDepth = extractBitDepth(track.BitDepth)
 			audio.CompressionMode = track.CompressionMode
 			audio.Language = track.Language
-			audio.XDuration = fmt.Sprintf("%d", audio.Duration)
-			audio.XDurationAff = fmt.Sprintf("%d", audio.DurationAff)
-			audio.XBitRate = fmt.Sprintf("%d", audio.BitRate)
-			audio.XChannel = fmt.Sprintf("%d", audio.Channel)
-			audio.XSamplingRate = fmt.Sprintf("%g", audio.SamplingRate)
 			mediaInfo.Audio = append(mediaInfo.Audio, audio)
 		case "Text":
 			var text Text_struct
@@ -367,7 +353,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			mediaInfo.Text = append(mediaInfo.Text, text)
 		}
 	}
-	if len(mediaInfo.Audio) > 1 {
+	if len(mediaInfo.Audio) > 0 {
 		var lang []string
 		var format []string
 		for _, audio := range mediaInfo.Audio {
@@ -379,14 +365,9 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		}
 		mediaInfo.General.AudioMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.AudioMultiPiste.Language = strings.Join(lang, " / ")
-	} else {
-		if len(mediaInfo.Audio) == 1 {
-			mediaInfo.General.AudioMultiPiste.Format = mediaInfo.Audio[0].Format
-			mediaInfo.General.AudioMultiPiste.Language = mediaInfo.Audio[0].Language
-		}
 	}
 
-	if len(mediaInfo.Text) > 1 {
+	if len(mediaInfo.Text) > 0 {
 		var lang []string
 		var format []string
 		for _, text := range mediaInfo.Text {
@@ -398,11 +379,6 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		}
 		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.TextMultiPiste.Language = strings.Join(lang, " / ")
-	} else {
-		if len(mediaInfo.Text) == 1 {
-			mediaInfo.General.TextMultiPiste.Format = mediaInfo.Text[0].Format
-			mediaInfo.General.TextMultiPiste.Language = mediaInfo.Text[0].Language
-		}
 	}
 
 	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
@@ -411,9 +387,9 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 }
 
 // extractFileSize() return size in GiB (1.43 GiB --> 1.43  ou  785 MiB --> 0.766)
-func extractFileSize(size string) float64 {
+func extractFileSize(size string) (float64, string) {
 	if size == "" {
-		return 0.0
+		return 0.0, "?"
 	} else {
 		mots := strings.Fields(size)
 		val, err := strconv.ParseFloat(mots[0], 64)
@@ -425,14 +401,14 @@ func extractFileSize(size string) float64 {
 		}
 		val = math.RoundToEven(val*10) / 10
 
-		return val
+		return val, strconv.FormatFloat(val, 'f', 2, 64)
 	}
 }
 
 // extractSize() return size in pixel (1 920 pixels --> 1920)
-func extractSize(size string) int64 {
+func extractSize(size string) (int64, string) {
 	if size == "" {
-		return 0
+		return 0, "?"
 	} else {
 		mots := strings.Fields(size)
 		var tmp string
@@ -443,14 +419,14 @@ func extractSize(size string) int64 {
 		if err != nil {
 			panic(fmt.Sprint("  extractSize > ParseInt ", err))
 		}
-		return result
+		return result, strconv.FormatInt(result, 10)
 	}
 }
 
 // extractDuration() return durée in sec (40mn 13s --> 2413)
-func extractDuration(duration string) int64 {
+func extractDuration(duration string) (int64, string) {
 	if duration == "" {
-		return 0
+		return 0, "?"
 	} else {
 		mots := strings.Fields(duration)
 		var result int64
@@ -475,25 +451,43 @@ func extractDuration(duration string) int64 {
 				panic(fmt.Sprint("  extractDuration > regexp ", val))
 			}
 		}
-		return result
+		return result, strconv.FormatInt(result, 10)
+	}
+}
+
+// extractDurationMN() convertir la durée sec -> mn
+func extractDurationMN(duration int64) (int64, string) {
+	if duration == 0 {
+		return 0, "?"
+	} else {
+		result := duration / 60
+		return result, strconv.FormatInt(result, 10)
 	}
 }
 
 // extractBitRate() return bitRate en Kbps (5 098 Kbps  --> 5098)
-func extractBitRate(bitRate string) int64 {
+func extractBitRate(bitRate string) (int64, string) {
 	if bitRate == "" {
-		return 0
+		return 0, "?"
 	} else {
 		mots := strings.Fields(bitRate)
 		var tmp string
 		for _, val := range mots[:len(mots)-1] {
 			tmp += val
 		}
-		result, err := strconv.ParseInt(tmp, 10, 64)
-		if err != nil {
-			panic(fmt.Sprint("  extractBitRate > ParseInt ", err))
+		var result int64
+		var err error
+		if strings.Contains(tmp, ".") {
+			var tmp float64
+			tmp, err = strconv.ParseFloat(tmp, 64)
+			result = int64(tmp)
+		} else {
+			result, err = strconv.ParseInt(tmp, 10, 64)
 		}
-		return result
+		if err != nil {
+			panic(fmt.Sprint("  extractBitRate > ParseInt/PaeseFloat ", err))
+		}
+		return result, strconv.FormatInt(result, 10)
 	}
 }
 
@@ -512,30 +506,30 @@ func extractFrameRate(frame string) float64 {
 }
 
 // extractBitDepth() return bitDepth in bits (8 bits --> 8)
-func extractBitDepth(bitDepth string) int64 {
+func extractBitDepth(bitDepth string) (int64, string) {
 	if bitDepth == "" {
-		return 0
+		return 0, "?"
 	} else {
 		mots := strings.Fields(bitDepth)
 		val, err := strconv.ParseInt(mots[0], 10, 64)
 		if err != nil {
 			panic(fmt.Sprint("  extractBitDepth > ParseInt ", err))
 		}
-		return val
+		return val, strconv.FormatInt(val, 10)
 	}
 }
 
 // extractChannel() return nb audio channel (6 channels --> 6)
-func extractChannel(channel string) int64 {
+func extractChannel(channel string) (int64, string) {
 	if channel == "" {
-		return 0
+		return 0, "?"
 	} else {
 		mots := strings.Fields(channel)
 		val, err := strconv.ParseInt(mots[0], 10, 64)
 		if err != nil {
 			panic(fmt.Sprint("  extractChannel > ParseInt ", err))
 		}
-		return val
+		return val, strconv.FormatInt(val, 10)
 	}
 }
 
@@ -599,16 +593,16 @@ func getChannelAff(channel int64) string {
 }
 
 // extractSamplingRate() return sampling rate in Khz  (48.0 KHz --> 48.0)
-func extractSamplingRate(rate string) float64 {
+func extractSamplingRate(rate string) (float64, string) {
 	if rate == "" {
-		return 0.0
+		return 0.0, "?"
 	} else {
 		mots := strings.Fields(rate)
 		val, err := strconv.ParseFloat(mots[0], 64)
 		if err != nil {
 			panic(fmt.Sprint("  extractSamplingRate > ParseFloat ", err))
 		}
-		return val
+		return val, strconv.FormatFloat(val, 'f', 1, 64)
 	}
 }
 
