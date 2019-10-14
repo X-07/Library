@@ -299,7 +299,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			general.FormatVersion = track.FormatVersion
 			general.FileSize, general.XFileSize = extractFileSize(track.FileSize)
 			general.Duration, general.XDuration = extractDuration(track.Duration)
-			general.DurationAff, general.XDurationAff = extractDurationMN(general.Duration
+			general.DurationAff, general.XDurationAff = extractDurationMN(general.Duration)
 			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate)
 			mediaInfo.General = general
 		case "Video":
@@ -401,7 +401,7 @@ func extractFileSize(size string) (float64, string) {
 		}
 		val = math.RoundToEven(val*10) / 10
 
-		return val, strconv.FormatFloat(val, 'f', 2, 64)
+		return val, strconv.FormatFloat(val, 'f', 1, 64)
 	}
 }
 
@@ -417,7 +417,9 @@ func extractSize(size string) (int64, string) {
 		}
 		result, err := strconv.ParseInt(tmp, 10, 64)
 		if err != nil {
-			result, err = tryConvertFloatToInt(tmp); if err != nil {
+			var ok bool
+			result, ok = tryConvertFloatToInt(tmp)
+			if !ok {
 				panic(fmt.Sprint("  extractSize > ParseInt ", err))
 			}
 		}
@@ -439,7 +441,9 @@ func extractDuration(duration string) (int64, string) {
 			if len(matches) == 3 {
 				tmp, err := strconv.ParseInt(matches[1], 10, 64)
 				if err != nil {
-					tmp, err = tryConvertFloatToInt(matches[1]); if err != nil {
+					var ok bool
+					tmp, ok = tryConvertFloatToInt(matches[1])
+					if !ok {
 						panic(fmt.Sprint("  extractDuration > ParseInt ", err))
 					}
 				}
@@ -481,7 +485,9 @@ func extractBitRate(bitRate string) (int64, string) {
 		}
 		result, err := strconv.ParseInt(tmp, 10, 64)
 		if err != nil {
-			result, err = tryConvertFloatToInt(tmp); if err != nil {
+			var ok bool
+			result, ok = tryConvertFloatToInt(tmp)
+			if !ok {
 				panic(fmt.Sprint("  extractBitRate > ParseInt ", err))
 			}
 		}
@@ -511,7 +517,9 @@ func extractBitDepth(bitDepth string) (int64, string) {
 		mots := strings.Fields(bitDepth)
 		val, err := strconv.ParseInt(mots[0], 10, 64)
 		if err != nil {
-			val, err = tryConvertFloatToInt(mots[0]); if err != nil {
+			var ok bool
+			val, ok = tryConvertFloatToInt(mots[0])
+			if !ok {
 				panic(fmt.Sprint("  extractBitDepth > ParseInt ", err))
 			}
 		}
@@ -527,7 +535,9 @@ func extractChannel(channel string) (int64, string) {
 		mots := strings.Fields(channel)
 		val, err := strconv.ParseInt(mots[0], 10, 64)
 		if err != nil {
-			val, err = tryConvertFloatToInt(mots[0]); if err != nil {
+			var ok bool
+			val, ok = tryConvertFloatToInt(mots[0])
+			if !ok {
 				panic(fmt.Sprint("  extractChannel > ParseInt ", err))
 			}
 		}
@@ -599,12 +609,18 @@ func extractSamplingRate(rate string) (float64, string) {
 	if rate == "" {
 		return 0.0, "?"
 	} else {
+		var valX string
 		mots := strings.Fields(rate)
 		val, err := strconv.ParseFloat(mots[0], 64)
 		if err != nil {
 			panic(fmt.Sprint("  extractSamplingRate > ParseFloat ", err))
 		}
-		return val, strconv.FormatFloat(val, 'f', 1, 64)
+		if strings.HasSuffix(mots[0], ".0") {
+			valX = strconv.FormatInt(int64(val), 10)
+		} else {
+			valX = strconv.FormatFloat(val, 'f', 1, 64)
+		}
+		return val, valX
 	}
 }
 
@@ -697,14 +713,13 @@ func transcodeVideoFrameRate(frameRate float64) string {
 
 // tryConvertFloatToInt() convertir flot ==> int
 func tryConvertFloatToInt(val string) (int64, bool) {
-		if strings.Contains(val, ".") {
-			tmp, err = :strconv.ParseFloat(tmp, 64)
-			if err != nil {
-				panic(fmt.Sprint("  tryConvertFloatToInt > ParseFloat ", err))
-			}
-			return int64(tmp), true
-		} else {
-			return 0, false
+	if strings.Contains(val, ".") {
+		tmp, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			panic(fmt.Sprint("  tryConvertFloatToInt > ParseFloat ", err))
 		}
+		return int64(tmp), true
+	} else {
+		return 0, false
+	}
 }
-
