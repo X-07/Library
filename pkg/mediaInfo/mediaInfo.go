@@ -79,15 +79,12 @@ var containers = map[string]bool{
 	".m4v":  true,
 }
 
-// structure en retour de l'appel à mediainfo
-type mediainfoXml struct {
+// structure en retour de l'appel à mediainfo le programme
+type MediainfoXml struct {
 	XMLName xml.Name `xml:"Mediainfo"`
-	Text    string   `xml:",chardata"`
 	Version string   `xml:"version,attr"`
 	File    struct {
-		Text  string `xml:",chardata"`
 		Track []struct {
-			Text                     string `xml:",chardata"`
 			Type                     string `xml:"type,attr"`
 			Streamid                 string `xml:"streamid,attr"`
 			UniqueID                 string `xml:"Unique_ID"`
@@ -273,8 +270,8 @@ func IsMediaFile(ext string) bool {
 	return result
 }
 
-// GetMediaInfo() : récupère les infos du média dans MediaInfo_struct
-func GetMediaInfo(fileName string) MediaInfo_struct {
+// GetMediaInfo() : récupère les infos du média dans MediainfoXml (données brutes)
+func GetMediaInfoData(fileName string) MediainfoXml {
 	var mediainfo_cmd string
 	mediainfo_cmd, err := exec.LookPath("mediainfo")
 	if err != nil {
@@ -286,8 +283,18 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 	if err != nil {
 		panic(fmt.Sprint("Command: mediainfo ", err))
 	}
-	var result mediainfoXml
+	var result MediainfoXml
 	err = xml.Unmarshal(out, &result) //DECODAGE
+	if err != nil {
+		panic(fmt.Sprint("GetMediaInfoData: Unmarshal ", err))
+	}
+	
+	return result
+}
+
+// GetMediaInfo() : récupère les infos du média dans MediaInfo_struct
+func GetMediaInfo(fileName string) MediaInfo_struct {
+	result := GetMediaInfoData(fileName)
 
 	//	fmt.Println(result)
 	var mediaInfo MediaInfo_struct
