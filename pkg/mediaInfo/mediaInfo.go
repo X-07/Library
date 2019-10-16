@@ -288,7 +288,7 @@ func GetMediaInfoData(fileName string) MediainfoXml {
 	if err != nil {
 		panic(fmt.Sprint("GetMediaInfoData: Unmarshal ", err))
 	}
-	
+
 	return result
 }
 
