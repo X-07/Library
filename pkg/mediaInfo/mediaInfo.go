@@ -111,6 +111,7 @@ type MediainfoXml struct {
 			CodecID                  string `xml:"Codec_ID"`
 			CodecIDInfo              string `xml:"Codec_ID_Info"`
 			BitRate                  string `xml:"Bit_rate"`
+			NominalBitRate           string `xml:"Nominal_bit_rate"`
 			Width                    string `xml:"Width"`
 			Height                   string `xml:"Height"`
 			DisplayAspectRatio       string `xml:"Display_aspect_ratio"`
@@ -142,6 +143,126 @@ type MediainfoXml struct {
 		} `xml:"track"`
 	} `xml:"File"`
 }
+
+// type MediainfoFullXml struct {
+// 	XMLName xml.Name `xml:"Mediainfo"`
+// 	Version string   `xml:"version,attr"`
+// 	File    struct {
+// 		Track []struct {
+// 			Type                          string   `xml:"type,attr"`
+// 			Count                         string   `xml:"Count"`
+// 			CountOfStreamOfThisKind       string   `xml:"Count_of_stream_of_this_kind"`
+// 			KindOfStream                  []string `xml:"Kind_of_stream"`
+// 			StreamIdentifier              string   `xml:"Stream_identifier"`
+// 			CountOfVideoStreams           string   `xml:"Count_of_video_streams"`
+// 			CountOfAudioStreams           string   `xml:"Count_of_audio_streams"`
+// 			VideoFormatList               string   `xml:"Video_Format_List"`
+// 			VideoFormatWithHintList       string   `xml:"Video_Format_WithHint_List"`
+// 			CodecsVideo                   string   `xml:"Codecs_Video"`
+// 			VideoLanguageList             string   `xml:"Video_Language_List"`
+// 			AudioFormatList               string   `xml:"Audio_Format_List"`
+// 			AudioFormatWithHintList       string   `xml:"Audio_Format_WithHint_List"`
+// 			AudioCodecs                   string   `xml:"Audio_codecs"`
+// 			AudioLanguageList             string   `xml:"Audio_Language_List"`
+// 			CompleteName                  string   `xml:"Complete_name"`
+// 			FileName                      string   `xml:"File_name"`
+// 			FileExtension                 string   `xml:"File_extension"`
+// 			Format                        []string `xml:"Format"`
+// 			FormatURL                     string   `xml:"Format_Url"`
+// 			FormatExtensionsUsuallyUsed   string   `xml:"Format_Extensions_usually_used"`
+// 			CommercialName                string   `xml:"Commercial_name"`
+// 			FormatVersion                 string   `xml:"Format_version"`
+// 			Codec                         []string `xml:"Codec"`
+// 			CodecURL                      string   `xml:"Codec_Url"`
+// 			CodecExtensionsUsuallyUsed    string   `xml:"Codec_Extensions_usually_used"`
+// 			FileSize                      []string `xml:"File_size"`
+// 			Duration                      []string `xml:"Duration"`
+// 			OverallBitRate                []string `xml:"Overall_bit_rate"`
+// 			FrameRate                     []string `xml:"Frame_rate"`
+// 			FrameCount                    string   `xml:"Frame_count"`
+// 			StreamSize                    []string `xml:"Stream_size"`
+// 			ProportionOfThisStream        string   `xml:"Proportion_of_this_stream"`
+// 			FileLastModificationDate      string   `xml:"File_last_modification_date"`
+// 			FileLastModificationDateLocal string   `xml:"File_last_modification_date__local_"`
+// 			WritingApplication            []string `xml:"Writing_application"`
+// 			WritingLibrary                []string `xml:"Writing_library"`
+// 			StreamOrder                   string   `xml:"StreamOrder"`
+// 			ID                            []string `xml:"ID"`
+// 			UniqueID                      string   `xml:"Unique_ID"`
+// 			FormatInfo                    string   `xml:"Format_Info"`
+// 			FormatProfile                 string   `xml:"Format_profile"`
+// 			FormatSettings                string   `xml:"Format_settings"`
+// 			FormatSettingsCABAC           []string `xml:"Format_settings__CABAC"`
+// 			FormatSettingsReFrames        []string `xml:"Format_settings__ReFrames"`
+// 			InternetMediaType             string   `xml:"Internet_media_type"`
+// 			CodecID                       string   `xml:"Codec_ID"`
+// 			CodecIDURL                    string   `xml:"Codec_ID_Url"`
+// 			CodecFamily                   string   `xml:"Codec_Family"`
+// 			CodecInfo                     string   `xml:"Codec_Info"`
+// 			CodecProfile                  string   `xml:"Codec_profile"`
+// 			CodecSettings                 string   `xml:"Codec_settings"`
+// 			CodecSettingsCABAC            string   `xml:"Codec_settings__CABAC"`
+// 			CodecSettingsRefFrames        string   `xml:"Codec_Settings_RefFrames"`
+// 			BitRate                       []string `xml:"Bit_rate"`
+// 			Width                         []string `xml:"Width"`
+// 			Height                        []string `xml:"Height"`
+// 			PixelAspectRatio              string   `xml:"Pixel_aspect_ratio"`
+// 			DisplayAspectRatio            []string `xml:"Display_aspect_ratio"`
+// 			FrameRateMode                 []string `xml:"Frame_rate_mode"`
+// 			Resolution                    []string `xml:"Resolution"`
+// 			Colorimetry                   string   `xml:"Colorimetry"`
+// 			ColorSpace                    string   `xml:"Color_space"`
+// 			ChromaSubsampling             string   `xml:"Chroma_subsampling"`
+// 			BitDepth                      []string `xml:"Bit_depth"`
+// 			ScanType                      []string `xml:"Scan_type"`
+// 			Interlacement                 []string `xml:"Interlacement"`
+// 			BitsPixelFrame                string   `xml:"Bits__Pixel_Frame_"`
+// 			Delay                         []string `xml:"Delay"`
+// 			DelayOrigin                   []string `xml:"Delay__origin"`
+// 			EncodedLibraryName            string   `xml:"Encoded_Library_Name"`
+// 			EncodedLibraryVersion         string   `xml:"Encoded_Library_Version"`
+// 			EncodingSettings              string   `xml:"Encoding_settings"`
+// 			Language                      []string `xml:"Language"`
+// 			Default                       []string `xml:"Default"`
+// 			Forced                        []string `xml:"Forced"`
+// 			ColorRange                    string   `xml:"Color_range"`
+// 			ColourDescriptionPresent      string   `xml:"colour_description_present"`
+// 			MatrixCoefficients            string   `xml:"Matrix_coefficients"`
+// 			ModeExtension                 string   `xml:"Mode_extension"`
+// 			FormatSettingsEndianness      string   `xml:"Format_settings__Endianness"`
+// 			BitRateMode                   []string `xml:"Bit_rate_mode"`
+// 			ChannelS                      []string `xml:"Channel_s_"`
+// 			ChannelPositions              []string `xml:"Channel_positions"`
+// 			ChannelLayout                 string   `xml:"ChannelLayout"`
+// 			SamplingRate                  []string `xml:"Sampling_rate"`
+// 			SamplesCount                  string   `xml:"Samples_count"`
+// 			CompressionMode               []string `xml:"Compression_mode"`
+// 			DelayRelativeToVideo          []string `xml:"Delay_relative_to_video"`
+// 			Video0Delay                   []string `xml:"Video0_delay"`
+// 			Bsid                          string   `xml:"bsid"`
+// 			Dialnorm                      string   `xml:"dialnorm"`
+// 			DialnormString                string   `xml:"dialnorm_String"`
+// 			Compr                         string   `xml:"compr"`
+// 			ComprString                   string   `xml:"compr_String"`
+// 			Acmod                         string   `xml:"acmod"`
+// 			Lfeon                         string   `xml:"lfeon"`
+// 			DialnormAverage               string   `xml:"dialnorm_Average"`
+// 			DialnormAverageString         string   `xml:"dialnorm_Average_String"`
+// 			DialnormMinimum               string   `xml:"dialnorm_Minimum"`
+// 			DialnormMinimumString         string   `xml:"dialnorm_Minimum_String"`
+// 			DialnormMaximum               string   `xml:"dialnorm_Maximum"`
+// 			DialnormMaximumString         string   `xml:"dialnorm_Maximum_String"`
+// 			DialnormCount                 string   `xml:"dialnorm_Count"`
+// 			ComprAverage                  string   `xml:"compr_Average"`
+// 			ComprAverageString            string   `xml:"compr_Average_String"`
+// 			ComprMinimum                  string   `xml:"compr_Minimum"`
+// 			ComprMinimumString            string   `xml:"compr_Minimum_String"`
+// 			ComprMaximum                  string   `xml:"compr_Maximum"`
+// 			ComprMaximumString            string   `xml:"compr_Maximum_String"`
+// 			ComprCount                    string   `xml:"compr_Count"`
+// 		} `xml:"track"`
+// 	} `xml:"File"`
+// }
 
 // structure MediaInfo
 type MediaInfo_struct struct {
@@ -270,6 +391,28 @@ func IsMediaFile(ext string) bool {
 	return result
 }
 
+// // GetMediaInfo() : récupère les infos du média dans MediainfoXml (données brutes)
+// func GetMediaInfoFullData(fileName string) MediainfoFullXml {
+// 	var mediainfo_cmd string
+// 	mediainfo_cmd, err := exec.LookPath("mediainfo")
+// 	if err != nil {
+// 		panic(fmt.Sprint("  could not find path to 'mediainfo': ", err))
+// 	}
+// 	tsIO.PrintConsole("-- found 'mediainfo' command: ", mediainfo_cmd)
+
+// 	out, err := exec.Command(mediainfo_cmd, "-f --Output=XML", fileName).Output()
+// 	if err != nil {
+// 		panic(fmt.Sprint("Command: mediainfo ", err))
+// 	}
+// 	var result MediainfoFullXml
+// 	err = xml.Unmarshal(out, &result) //DECODAGE
+// 	if err != nil {
+// 		panic(fmt.Sprint("GetMediaInfoData: Unmarshal ", err))
+// 	}
+
+// 	return result
+// }
+
 // GetMediaInfo() : récupère les infos du média dans MediainfoXml (données brutes)
 func GetMediaInfoData(fileName string) MediainfoXml {
 	var mediainfo_cmd string
@@ -307,7 +450,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			general.FileSize, general.XFileSize = extractFileSize(track.FileSize)
 			general.Duration, general.XDuration = extractDuration(track.Duration)
 			general.DurationAff, general.XDurationAff = extractDurationMN(general.Duration)
-			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate)
+			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate, track.NominalBitRate)
 			mediaInfo.General = general
 		case "Video":
 			var video Video_struct
@@ -319,7 +462,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.CodecID)
 			video.Duration, video.XDuration = extractDuration(track.Duration)
 			video.DurationAff, video.XDurationAff = extractDurationMN(video.Duration)
-			video.BitRate, video.XBitRate = extractBitRate(track.BitRate)
+			video.BitRate, video.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate)
 			video.Width, video.XWidth = extractSize(track.Width)
 			video.Height, video.XHeight = extractSize(track.Height)
 			video.FrameRateMode = track.FrameRateMode
@@ -341,7 +484,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			audio.Duration, audio.XDuration = extractDuration(track.Duration)
 			audio.DurationAff, audio.XDurationAff = extractDurationMN(audio.Duration)
 			audio.BitRateMode = track.BitRateMode
-			audio.BitRate, audio.XBitRate = extractBitRate(track.BitRate)
+			audio.BitRate, audio.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate)
 			audio.Channel, audio.XChannel = extractChannel(track.ChannelS)
 			audio.ChannelPositions = track.ChannelPositions
 			audio.ChannelDetail = getChannelDetail(track.ChannelPositions)
@@ -481,10 +624,13 @@ func extractDurationMN(duration int64) (int64, string) {
 }
 
 // extractBitRate() return bitRate en Kbps (5 098 Kbps  --> 5098)
-func extractBitRate(bitRate string) (int64, string) {
-	if bitRate == "" {
+func extractBitRate(bitRate string, nominalBitRate string) (int64, string) {
+	if bitRate == "" && nominalBitRate == "" {
 		return 0, "?"
 	} else {
+		if bitRate == "" {
+			bitRate = nominalBitRate
+		}
 		mots := strings.Fields(bitRate)
 		var tmp string
 		for _, val := range mots[:len(mots)-1] {
