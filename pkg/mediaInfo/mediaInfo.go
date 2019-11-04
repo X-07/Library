@@ -110,6 +110,7 @@ type MediainfoXml struct {
 			FormatSettingsReFrames   string `xml:"Format_settings__ReFrames"`
 			CodecID                  string `xml:"Codec_ID"`
 			CodecIDInfo              string `xml:"Codec_ID_Info"`
+			CodecIDHint              string `xml:"Codec_ID_Hint"`
 			BitRate                  string `xml:"Bit_rate"`
 			NominalBitRate           string `xml:"Nominal_bit_rate"`
 			Width                    string `xml:"Width"`
@@ -459,7 +460,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			video.FormatProfile = track.FormatProfile
 			video.CodecID = track.CodecID
 			video.CodecIDInfo = track.CodecIDInfo
-			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.CodecID)
+			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.CodecID, track.CodecIDHint)
 			video.Duration, video.XDuration = extractDuration(track.Duration)
 			video.DurationAff, video.XDurationAff = extractDurationMN(video.Duration)
 			video.BitRate, video.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate)
@@ -480,7 +481,7 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			audio.FormatInfo = track.FormatInfo
 			audio.CodecID = track.CodecID
 			audio.CodecIDInfo = track.CodecIDInfo
-			audio.CodecA = getCodeCodecAudio(audio.FormatInfo, audio.CodecID, audio.CodecIDInfo)
+			audio.CodecA = getCodeCodecAudio(audio.Format, audio.CodecID, track.CodecIDHint, track.FormatVersion, track.FormatProfile)
 			audio.Duration, audio.XDuration = extractDuration(track.Duration)
 			audio.DurationAff, audio.XDurationAff = extractDurationMN(audio.Duration)
 			audio.BitRateMode = track.BitRateMode
@@ -784,15 +785,20 @@ func extractSamplingRate(rate string) (float64, string) {
 //		CodecID: 'V_MPEG4/ISO/AVC'
 //		CodecIDInfo
 
-func getCodecVideo(format string, formatProfile string, codecID string) string {
+func getCodecVideo(format string, formatProfile string, codecID string, codecIDHint string) string {
 	var codecV string
-	//	if videoCodecHint == "divx 3 low" {
-	//		codecV = "DivX 3 Low"
-	if codecID == "dx50" {
+	if codecIDHint == "divx 3 low" {
+		return "DivX 3 Low"
+	}
+	//-------------------------------
+	switch strings.ToUpper(codecID) {
+	case "DX50":
 		codecV = "DivX 5"
-	} else {
-		switch format {
-		case "XVID", "xvid":
+	case "XVID":
+		codecV = "XviD"
+	default:
+		switch strings.ToUpper(format) {
+		case "XVID":
 			codecV = "XviD"
 		case "DIV3":
 			codecV = "DivX 3"
@@ -801,12 +807,12 @@ func getCodecVideo(format string, formatProfile string, codecID string) string {
 		case "MPEGVIDEO": //&& codec == "mpeg-1v" {
 			codecV = "MPEG-1"
 		case "MPEG-4VISUAL":
-			switch codecID {
-			case "mp42":
+			switch strings.ToUpper(codecID) {
+			case "MP42":
 				codecV = "MPEG-4"
-			case "divx":
+			case "DIVX":
 				codecV = "DivX 4"
-			case "xvid":
+			case "XVID":
 				codecV = "XviD"
 			default:
 				codecV = "MPEG-4"
@@ -821,7 +827,7 @@ func getCodecVideo(format string, formatProfile string, codecID string) string {
 				val += ".0"
 			}
 			codecV += " - " + val
-		case "hevc", "HEVC":
+		case "HEVC":
 			codecV = "X265"
 		default:
 			codecV = "????"
@@ -831,11 +837,13 @@ func getCodecVideo(format string, formatProfile string, codecID string) string {
 }
 
 //### getCodeCodecAudio() - transcode le codec audio pour faciliter la lecture
-func getCodeCodecAudio(format string, codec string, codecHint string) string {
+func getCodeCodecAudio(format string, codec string, codecHint string, formatVersion string, formatProfile string) string {
 	var codecA string
-	if codecHint == "mp3" || codec == "mpa1l3" {
+	if strings.ToUpper(format) == "MPEG AUDIO" && strings.ToUpper(formatVersion) == "VERSION 1" && strings.ToUpper(formatProfile) == "LAYER 3" {
 		codecA = "MP3"
-	} else if codecHint == "mp2" || codec == "mpa1l2" {
+	} else if strings.ToUpper(codecHint) == "MP3" || strings.ToUpper(codec) == "MPA1L3" {
+		codecA = "MP3"
+	} else if strings.ToUpper(codecHint) == "MP2" || strings.ToUpper(codec) == "MPA1L2" {
 		codecA = "MP2"
 	} else if strings.ToUpper(format) == "VORBIS" {
 		codecA = "Vorbis"
