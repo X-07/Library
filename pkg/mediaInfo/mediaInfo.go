@@ -6,7 +6,6 @@ import (
 	"math"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -39,7 +38,6 @@ var containers = map[string]bool{
 	".wav":  true,
 	".mpeg": true,
 	".mpg":  true,
-	".vob":  true,
 	".mp4":  true,
 	".mpgv": true,
 	".mpv":  true,
@@ -55,7 +53,6 @@ var containers = map[string]bool{
 	".rm":   true,
 	".rmvb": true,
 	".ra":   true,
-	".ifo":  true,
 	".ac3":  true,
 	".dts":  true,
 	".aac":  true,
@@ -534,6 +531,46 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 
 	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
 
+	if len(mediaInfo.Video) == 0 {
+		var video Video_struct
+		video.Format = "?"
+		video.FormatInfo = "?"
+		video.FormatProfile = "?"
+		video.CodecID = "?"
+		video.CodecIDInfo = "?"
+		video.CodecV = "?"
+		video.Duration, video.XDuration = 0, "?"
+		video.DurationAff, video.XDurationAff = 0, "?"
+		video.BitRate, video.XBitRate = 0, "?"
+		video.Width, video.XWidth = 0, "?"
+		video.Height, video.XHeight = 0, "?"
+		video.FrameRateMode = "?"
+		video.BitDepth, video.XBitDepth = 0, "?"
+		video.Language = "?"
+		mediaInfo.Video = append(mediaInfo.Video, video)
+	}
+	if len(mediaInfo.Audio) == 0 {
+		var audio Audio_struct
+		audio.Format = "?"
+		audio.FormatInfo = "?"
+		audio.CodecID = "?"
+		audio.CodecIDInfo = "?"
+		audio.CodecA = "?"
+		audio.Duration, audio.XDuration = 0, "?"
+		audio.DurationAff, audio.XDurationAff = 0, "?"
+		audio.BitRateMode = "?"
+		audio.BitRate, audio.XBitRate = 0, "?"
+		audio.Channel, audio.XChannel = 0, "?"
+		audio.ChannelPositions = "?"
+		audio.ChannelDetail = getChannelDetail("")
+		audio.ChannelAff = "?"
+		audio.SamplingRate, audio.XSamplingRate = 0, "?"
+		audio.BitDepth, audio.XBitDepth = 0, "?"
+		audio.CompressionMode = "?"
+		audio.Language = "?"
+		mediaInfo.Audio = append(mediaInfo.Audio, audio)
+	}
+
 	return mediaInfo
 }
 
@@ -578,38 +615,18 @@ func extractSize(size string) (int64, string) {
 	}
 }
 
-// extractDuration() return durée in sec (40mn 13s --> 2413)
+// extractDuration() return durée in sec (40mn 13s --> 2413 (int & string))
 func extractDuration(duration string) (int64, string) {
 	if duration == "" {
 		return 0, "?"
 	} else {
-		mots := strings.Fields(duration)
-		var result int64
-		result = 0
-		for _, val := range mots {
-			var re = regexp.MustCompile(`([0-9]*)([a-zA-Z]*)`)
-			matches := re.FindStringSubmatch(val)
-			if len(matches) == 3 {
-				tmp, err := strconv.ParseInt(matches[1], 10, 64)
-				if err != nil {
-					var ok bool
-					tmp, ok = tryConvertFloatToInt(matches[1])
-					if !ok {
-						panic(fmt.Sprint("  extractDuration > ParseInt ", err))
-					}
-				}
-				switch matches[2] {
-				case "h":
-					result += tmp * 3600
-				case "mn":
-					result += tmp * 60
-				case "s":
-					result += tmp
-				}
-			} else {
-				panic(fmt.Sprint("  extractDuration > regexp ", val))
-			}
+		duration := strings.ReplaceAll(strings.Join(strings.Fields(duration), ""), "mn", "m") // 40mn 13s  ==>  40m13s
+		duree, err := time.ParseDuration(duration)
+		if err != nil {
+			panic(fmt.Sprint("  extractDuration > ParseDuration ", err))
 		}
+		result := int64(duree.Seconds())
+
 		return result, strconv.FormatInt(result, 10)
 	}
 }
@@ -619,7 +636,7 @@ func extractDurationMN(duration int64) (int64, string) {
 	if duration == 0 {
 		return 0, "?"
 	} else {
-		result := duration / 60
+		result := (duration + 30) / 60
 		return result, strconv.FormatInt(result, 10)
 	}
 }
@@ -786,6 +803,10 @@ func extractSamplingRate(rate string) (float64, string) {
 //		CodecIDInfo
 
 func getCodecVideo(format string, formatProfile string, codecID string, codecIDHint string) string {
+	if format == "" && formatProfile == "" && codecID == "" && codecIDHint == "" {
+		return "????"
+	}
+
 	var codecV string
 	if codecIDHint == "divx 3 low" {
 		return "DivX 3 Low"
