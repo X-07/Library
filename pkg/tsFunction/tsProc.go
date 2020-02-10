@@ -1,8 +1,10 @@
 package tsFunction
 
-import "strconv"
+import (
+	"strconv"
+)
 
-// MiseEnFormeByte(nb octets)
+// MiseEnFormeByte (nb octets)
 func MiseEnFormeByte(bps int64) string {
 	var unit string
 	var speed float64
@@ -47,7 +49,7 @@ func MiseEnFormeByte(bps int64) string {
 	return xSpeed + unit
 }
 
-// MiseEnFormeBit(nb bits)
+// MiseEnFormeBit (nb bits)
 func MiseEnFormeBit(bps int64) string {
 	var unit string
 	var speed float64
@@ -92,7 +94,7 @@ func MiseEnFormeBit(bps int64) string {
 	return xSpeed + unit
 }
 
-//function de mise en forme
+//MiseEnFormeGiga : function de mise en forme
 func MiseEnFormeGiga(val int64) string {
 	var xResult string
 	result := float64(val) / 1048576 //1Go

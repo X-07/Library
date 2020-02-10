@@ -61,19 +61,20 @@ type file_struct struct {
 //   Wired Properties
 //     Carrier
 
-// GetConnexion() : recherche du device de connexion ethernet (ex: eth0)
+// GetConnexion : recherche du device de connexion ethernet (ex: eth0)
 func GetConnexion() string {
 	var connect string
 	// execution de la commande shell "nm-tool"
-	cmd := exec.Command("nm-tool")
+	cmd := exec.Command("nmcli")
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetConnexion()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getConnexion: ", err))
 	}
 	// recherche du device sur lequel on est connecté et extraction de son nom
-	var re = regexp.MustCompile(`- Device: (.*)  \[Connexion`)
+	var re = regexp.MustCompile(`(.*): connect. to`)
 	matches := re.FindStringSubmatch(out.String())
 	if len(matches) == 2 {
 		connect = matches[1]
@@ -85,7 +86,7 @@ func GetConnexion() string {
 	return connect
 }
 
-// ReadStats(device) : lecture du nombre d'octets reçus
+// ReadStatsDown (device) : lecture du nombre d'octets reçus
 func ReadStatsDown(connect string) int64 {
 	var rxBytes64 int64
 	// lecture du fichier "/sys/class/net/$interface/statistics/rx_bytes" par le cat du bash !
@@ -95,19 +96,21 @@ func ReadStatsDown(connect string) int64 {
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.ReadStatsDown()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - readStatsDown > 'cat': ", err))
 	}
 	m := strings.Split(out.String(), "\n")
 	rxBytes := m[0]
 	rxBytes64, err = strconv.ParseInt(rxBytes, 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.ReadStatsDown()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - readStatsDown > parseInt: ", err))
 	}
 
 	return rxBytes64
 }
 
-// ReadStats(device) : lecture du nombre d'octets émis
+// ReadStatsUp (device) : lecture du nombre d'octets émis
 func ReadStatsUp(connect string) int64 {
 	var txBytes64 int64
 	// lecture du fichier "/sys/class'/net/$interface/statistics/tx_bytes" par le cat du bash !
@@ -117,23 +120,26 @@ func ReadStatsUp(connect string) int64 {
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.ReadStatsUp()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - readStatsUp > 'cat': ", err))
 	}
 	m := strings.Split(out.String(), "\n")
 	txBytes := m[0]
 	txBytes64, err = strconv.ParseInt(txBytes, 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.ReadStatsUp()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - readStatsUp > parseInt: ", err))
 	}
 
 	return txBytes64
 }
 
-// GetDataCPU() : recherche les infos du CPU
+// GetDataCPU : recherche les infos du CPU
 func GetDataCPU(core string) file_struct {
 	var file file_struct
 	enrg, err := ReadFileForValue("/proc/stat", "cpu"+core)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > ReadFileForValue: ", err))
 	}
 	mots := strings.Fields(enrg)
@@ -141,30 +147,37 @@ func GetDataCPU(core string) file_struct {
 	var user, nice, system, idle, irq, softirq int64
 	user, err = strconv.ParseInt(mots[1], 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > parseInt: ", err))
 	}
 	nice, err = strconv.ParseInt(mots[2], 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > parseInt: ", err))
 	}
 	system, err = strconv.ParseInt(mots[3], 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > parseInt: ", err))
 	}
 	idle, err = strconv.ParseInt(mots[4], 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > parseInt: ", err))
 	}
 	file.ChargeIo, err = strconv.ParseInt(mots[5], 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > parseInt: ", err))
 	}
 	irq, err = strconv.ParseInt(mots[6], 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > parseInt: ", err))
 	}
 	softirq, err = strconv.ParseInt(mots[7], 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > parseInt: ", err))
 	}
 	file.ChargeUsr = user + nice
@@ -185,6 +198,7 @@ func GetDataAllDisk() (float64, float64) {
 	for _, device := range listDisk {
 		input, err := ioutil.ReadFile(device + "/size")
 		if err != nil {
+			CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataAllDisk()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 			panic(fmt.Sprint("tsSys - getDataAllDisk > ReadFile: ", err))
 		}
 		taille := strings.Split(string(input), "\n")[0]
@@ -203,6 +217,7 @@ func GetDataAllDisk() (float64, float64) {
 			var val int64
 			val, err = strconv.ParseInt(strings.Fields(string(sector))[0], 10, 64)
 			if err != nil {
+				CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataAllDisk()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 				panic(fmt.Sprint("tsSys - getDataAllDisk > ReadFile: ", err))
 			}
 			sectorSize = append(sectorSize, val)
@@ -216,15 +231,18 @@ func GetDataAllDisk() (float64, float64) {
 		var lec, ecr int64
 		input, err := ioutil.ReadFile("/sys/block/" + hdd + "/stat")
 		if err != nil {
+			CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataAllDisk()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 			panic(fmt.Sprint("tsSys - getDataAllDisk > ReadFile: ", err))
 		}
 		mots := strings.Fields(string(input))
 		lec, err = strconv.ParseInt(mots[3], 10, 64)
 		if err != nil {
+			CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataAllDisk()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 			panic(fmt.Sprint("tsSys - getDataAllDisk > ParseInt: ", err))
 		}
 		ecr, err = strconv.ParseInt(mots[7], 10, 64)
 		if err != nil {
+			CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataAllDisk()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 			panic(fmt.Sprint("tsSys - getDataAllDisk > ParseInt: ", err))
 		}
 
@@ -235,11 +253,12 @@ func GetDataAllDisk() (float64, float64) {
 	return totalLec, totalEcr
 }
 
-// GetProcessPIDs() retourne la liste des PID correspondant au nom d'un processus
+// GetNbProcess retourne la liste des PID correspondant au nom d'un processus
 func GetNbProcess(processName string) int64 {
 	out, err := exec.Command("pgrep", "-c", processName).Output()
 	if err != nil {
 		if fmt.Sprint(err) != "exit status 1" {
+			CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetNbProcess()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 			panic(fmt.Sprint("tsSys - getProcessPIDs > Command: pgrep ", err))
 		}
 	}
@@ -247,13 +266,14 @@ func GetNbProcess(processName string) int64 {
 	nbx := strings.Split(string(out), "\n")[0]
 	nb, err = strconv.ParseInt(nbx, 10, 64)
 	if err != nil {
+		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetNbProcess()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getProcessPIDs > parseInt: ", err))
 	}
 
 	return nb
 }
 
-// CallNotifySend() affiche un notification popup à l'écran
+// CallNotifySend affiche un notification popup à l'écran
 func CallNotifySend(cmdArgs []string) {
 	cmdName := "notify-send"
 	cmd := exec.Command(cmdName, cmdArgs...)
