@@ -652,6 +652,9 @@ func extractBitRate(bitRate string, nominalBitRate string) (int64, string) {
 		mots := strings.Fields(bitRate)
 		var tmp string
 		for _, val := range mots[:len(mots)-1] {
+			if val == "Kbps" || val == "Mbps" {
+				break
+			}
 			if _, err := strconv.ParseFloat(val, 64); err == nil {
 				tmp += val
 			}
@@ -801,7 +804,7 @@ func getCodecVideo(format string, formatProfile string, codecID string, codecIDH
 	}
 
 	var codecV string
-	if codecIDHint == "divx 3 low" {
+	if strings.ToUpper(codecIDHint) == "DIVX 3 LOW" {
 		return "DivX 3 Low"
 	}
 	//-------------------------------
@@ -810,6 +813,11 @@ func getCodecVideo(format string, formatProfile string, codecID string, codecIDH
 		codecV = "DivX 5"
 	case "XVID":
 		codecV = "XviD"
+	case "DIV3":
+		codecV = "DivX 3"
+		if strings.ToUpper(codecIDHint) == "DIVX 3 LOW" {
+			codecV = "DivX 3 Low"
+		}
 	default:
 		switch strings.ToUpper(format) {
 		case "XVID":
@@ -820,14 +828,16 @@ func getCodecVideo(format string, formatProfile string, codecID string, codecIDH
 			codecV = "DivX 4"
 		case "MPEGVIDEO", "MPEG VIDEO": //&& codec == "mpeg-1v" {
 			codecV = "MPEG-1"
-		case "MPEG-4VISUAL":
+		case "MPEG-4 VISUAL":
 			switch strings.ToUpper(codecID) {
 			case "MP42":
 				codecV = "MPEG-4"
 			case "DIVX":
 				codecV = "DivX 4"
-			case "XVID":
+			case "XVID", "V_MS/VFW/FOURCC / XVID":
 				codecV = "XviD"
+			case "V_MS/VFW/FOURCC / DX50":
+				codecV = "DivX 5"
 			default:
 				codecV = "MPEG-4"
 			}
@@ -887,4 +897,3 @@ func transcodeVideoFrameRate(frameRate float64) string {
 	}
 	return result
 }
-
