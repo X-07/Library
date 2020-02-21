@@ -33,6 +33,7 @@ var containers = map[string]bool{
 	".mka":  true,
 	".mks":  true,
 	".ogg":  true,
+	".ogv":  true,
 	".ogm":  true,
 	".avi":  true,
 	".wav":  true,
@@ -571,43 +572,40 @@ func extractBitRate(bitRate string, nominalBitRate string) (int64, string) {
 	return int64(result), strconv.FormatInt(int64(result), 10)
 }
 
-// extractFrameRate return frameRate in fps (23.976 fps --> 23.976)
+// extractFrameRate return frameRate in fps (23.976 (fps) --> 23.976 (fps))
 func extractFrameRate(frame string) float64 {
 	if frame == "" {
 		return 0.0
 	}
-	mots := strings.Fields(frame)
-	val, err := strconv.ParseFloat(mots[0], 64)
+	val, err := strconv.ParseFloat(frame, 64)
 	if err != nil {
 		return 0.0
 	}
 	return val
 }
 
-// extractBitDepth return bitDepth in bits (8 bits --> 8)
+// extractBitDepth return bitDepth in bits (8 (bits) --> 8 (bits))
 func extractBitDepth(bitDepth string) (int64, string) {
 	if bitDepth == "" {
 		return 0, "?"
 	}
-	mots := strings.Fields(bitDepth)
-	val, err := strconv.ParseFloat(mots[0], 64)
+	result, err := strconv.ParseInt(bitDepth, 10, 64)
 	if err != nil {
 		return 0, "-X-"
 	}
-	return int64(val), strconv.FormatInt(int64(val), 10)
+	return result, strconv.FormatInt(result, 10)
 }
 
-// extractChannel return nb audio channel (6 channels --> 6)
+// extractChannel return nb audio channel (6 --> 6)
 func extractChannel(channel string) (int64, string) {
 	if channel == "" {
 		return 0, "?"
 	}
-	mots := strings.Fields(channel)
-	val, err := strconv.ParseFloat(mots[0], 64)
+	result, err := strconv.ParseInt(channel, 10, 64)
 	if err != nil {
 		return 0, "-X-"
 	}
-	return int64(val), strconv.FormatInt(int64(val), 10)
+	return result, strconv.FormatInt(result, 10)
 }
 
 // getChannelDetail // Front: L C R, Side: L R, LFE
@@ -669,23 +667,23 @@ func getChannelAff(channel int64) string {
 	return retour
 }
 
-// extractSamplingRate return sampling rate in Khz  (48.0 KHz --> 48.0)
+// extractSamplingRate return sampling rate in Khz  (48000 (Hz) --> 48 (KHz)) et (44100 (Hz) --> 44.1 (KHz))
 func extractSamplingRate(rate string) (float64, string) {
 	if rate == "" {
 		return 0.0, "?"
 	}
-	var valX string
-	mots := strings.Fields(rate)
-	val, err := strconv.ParseFloat(mots[0], 64)
+	result, err := strconv.ParseFloat(rate, 64)
 	if err != nil {
 		return 0.0, "-X-"
 	}
-	if strings.HasSuffix(mots[0], ".0") {
-		valX = strconv.FormatInt(int64(val), 10)
+	result /= 1000
+	var resultX string
+	if result == float64(int64(result)) {
+		resultX = strconv.FormatInt(int64(result), 10)
 	} else {
-		valX = strconv.FormatFloat(val, 'f', 1, 64)
+		resultX = strconv.FormatFloat(result, 'f', 1, 64)
 	}
-	return val, valX
+	return result, resultX
 }
 
 //### getCodecVideo - transcode le codec vidéo pour faciliter la lecture
@@ -697,6 +695,9 @@ func getCodecVideo(format string, formatProfile string, formatLevel string, code
 	if format == "" && formatProfile == "" && formatLevel == "" && codecID == "" {
 		return "????"
 	}
+	if formatLevel != "" && len(formatLevel) == 1 && strings.ToUpper(format) == "AVC" {
+		formatLevel += ".0"
+	}
 
 	var codecV string
 
@@ -705,6 +706,8 @@ func getCodecVideo(format string, formatProfile string, formatLevel string, code
 		codecV = "X264" + " - " + formatLevel
 	case "HEVC":
 		codecV = "X265"
+	case "THEORA":
+		codecV = "Theora"
 	default:
 		codecV = "????"
 	}
