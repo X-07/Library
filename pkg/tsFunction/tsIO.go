@@ -89,7 +89,7 @@ func OpenNewFileRW(fic string) (*os.File, error) {
 	return fileLog, err
 }
 
-//Ecriture dans un fichier de données "struct" au format json
+//Écriture dans un fichier de données "struct" au format json
 func WriteJsonFile(filename string, data interface{}) error {
 	fileContent, err := json.Marshal(data)
 	if err == nil {
