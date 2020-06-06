@@ -74,7 +74,7 @@ func GetConnexion() string {
 		panic(fmt.Sprint("tsSys - getConnexion: ", err))
 	}
 	// recherche du device sur lequel on est connecté et extraction de son nom
-	var re = regexp.MustCompile(`(.*): connect. to`)
+	var re = regexp.MustCompile(`(.*): connect. .`)
 	matches := re.FindStringSubmatch(out.String())
 	if len(matches) == 2 {
 		connect = matches[1]
