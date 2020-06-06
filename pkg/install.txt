@@ -1,4 +1,4 @@
-Il faut creer un lien symbolique entre le dossier "tsFunction" et "home/${user}/go/src"
+Il faut creer un lien symbolique entre le dossier "tsFunction"/"mediaInfo" et "home/${user}/go/src"
 
 ensuite dans le projet faire simplement
 
