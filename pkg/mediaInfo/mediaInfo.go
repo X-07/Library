@@ -1,4 +1,4 @@
-package mediaInfo
+package mediainfo
 
 import (
 	"encoding/xml"
@@ -20,12 +20,12 @@ var start time.Time
 var traceConsole = false //trace sur la console
 var appRep string
 
-const CHANNEl1 = "1ch: Mono"
-const CHANNEl2 = "2ch: Stereo"
-const CHANNEl3 = "3ch: Stereo 2.1"
-const CHANNEl5 = "5ch: Surround"
-const CHANNEl6 = "6ch: Surround"
-const CHANNEl8 = "8ch: Surround +"
+const channel1 = "1ch: Mono"
+const channel2 = "2ch: Stereo"
+const channel3 = "3ch: Stereo 2.1"
+const channel5 = "5ch: Surround"
+const channel6 = "6ch: Surround"
+const channel8 = "8ch: Surround +"
 
 // liste des extentions contenant des médias
 var containers = map[string]bool{
@@ -33,6 +33,7 @@ var containers = map[string]bool{
 	".mka":  true,
 	".mks":  true,
 	".ogg":  true,
+	".ogv":  true,
 	".ogm":  true,
 	".avi":  true,
 	".wav":  true,
@@ -76,271 +77,231 @@ var containers = map[string]bool{
 	".m4v":  true,
 }
 
-// structure en retour de l'appel à mediainfo le programme
-type MediainfoXml struct {
-	XMLName xml.Name `xml:"Mediainfo"`
-	Version string   `xml:"version,attr"`
-	File    struct {
-		Track []struct {
-			Type                     string `xml:"type,attr"`
-			Streamid                 string `xml:"streamid,attr"`
-			UniqueID                 string `xml:"Unique_ID"`
-			CompleteName             string `xml:"Complete_name"`
-			Format                   string `xml:"Format"`
-			FormatVersion            string `xml:"Format_version"`
-			FileSize                 string `xml:"File_size"`
-			Duration                 string `xml:"Duration"`
-			OverallBitRate           string `xml:"Overall_bit_rate"`
-			EncodedDate              string `xml:"Encoded_date"`
-			WritingApplication       string `xml:"Writing_application"`
-			WritingLibrary           string `xml:"Writing_library"`
-			DURATION                 string `xml:"DURATION"`
-			NUMBEROFFRAMES           string `xml:"NUMBER_OF_FRAMES"`
-			NUMBEROFBYTES            string `xml:"NUMBER_OF_BYTES"`
-			STATISTICSWRITINGAPP     string `xml:"_STATISTICS_WRITING_APP"`
-			STATISTICSWRITINGDATEUTC string `xml:"_STATISTICS_WRITING_DATE_UTC"`
-			STATISTICSTAGS           string `xml:"_STATISTICS_TAGS"`
-			ID                       string `xml:"ID"`
-			FormatInfo               string `xml:"Format_Info"`
-			FormatProfile            string `xml:"Format_profile"`
-			FormatSettingsCABAC      string `xml:"Format_settings__CABAC"`
-			FormatSettingsReFrames   string `xml:"Format_settings__ReFrames"`
-			CodecID                  string `xml:"Codec_ID"`
-			CodecIDInfo              string `xml:"Codec_ID_Info"`
-			CodecIDHint              string `xml:"Codec_ID_Hint"`
-			BitRate                  string `xml:"Bit_rate"`
-			NominalBitRate           string `xml:"Nominal_bit_rate"`
-			Width                    string `xml:"Width"`
-			Height                   string `xml:"Height"`
-			DisplayAspectRatio       string `xml:"Display_aspect_ratio"`
-			FrameRateMode            string `xml:"Frame_rate_mode"`
-			FrameRate                string `xml:"Frame_rate"`
-			OriginalFrameRate        string `xml:"Original_frame_rate"`
-			MinimumFrameRate         string `xml:"Minimum_frame_rate"`
-			MaximumFrameRate         string `xml:"Maximum_frame_rate"`
-			ColorSpace               string `xml:"Color_space"`
-			ChromaSubsampling        string `xml:"Chroma_subsampling"`
-			BitDepth                 string `xml:"Bit_depth"`
-			ScanType                 string `xml:"Scan_type"`
-			BitsPixelFrame           string `xml:"Bits__Pixel_Frame_"`
-			StreamSize               string `xml:"Stream_size"`
-			Language                 string `xml:"Language"`
-			Default                  string `xml:"Default"`
-			Forced                   string `xml:"Forced"`
-			ColorPrimaries           string `xml:"Color_primaries"`
-			TransferCharacteristics  string `xml:"Transfer_characteristics"`
-			MatrixCoefficients       string `xml:"Matrix_coefficients"`
-			ModeExtension            string `xml:"Mode_extension"`
-			FormatSettingsEndianness string `xml:"Format_settings__Endianness"`
-			EncodingSettings         string `xml:"Encoding_settings"`
-			BitRateMode              string `xml:"Bit_rate_mode"`
-			ChannelS                 string `xml:"Channel_s_"`
-			ChannelPositions         string `xml:"Channel_positions"`
-			SamplingRate             string `xml:"Sampling_rate"`
-			CompressionMode          string `xml:"Compression_mode"`
-		} `xml:"track"`
-	} `xml:"File"`
-}
-
-// type MediainfoFullXml struct {
-// 	XMLName xml.Name `xml:"Mediainfo"`
+// // MediaInfoXML1404 structure en retour de l'appel à mediainfo le programme
+// type MediaInfoXML1404 struct {
+// 	XMLName xml.Name `xml:"MediaInfo"`
 // 	Version string   `xml:"version,attr"`
 // 	File    struct {
 // 		Track []struct {
-// 			Type                          string   `xml:"type,attr"`
-// 			Count                         string   `xml:"Count"`
-// 			CountOfStreamOfThisKind       string   `xml:"Count_of_stream_of_this_kind"`
-// 			KindOfStream                  []string `xml:"Kind_of_stream"`
-// 			StreamIdentifier              string   `xml:"Stream_identifier"`
-// 			CountOfVideoStreams           string   `xml:"Count_of_video_streams"`
-// 			CountOfAudioStreams           string   `xml:"Count_of_audio_streams"`
-// 			VideoFormatList               string   `xml:"Video_Format_List"`
-// 			VideoFormatWithHintList       string   `xml:"Video_Format_WithHint_List"`
-// 			CodecsVideo                   string   `xml:"Codecs_Video"`
-// 			VideoLanguageList             string   `xml:"Video_Language_List"`
-// 			AudioFormatList               string   `xml:"Audio_Format_List"`
-// 			AudioFormatWithHintList       string   `xml:"Audio_Format_WithHint_List"`
-// 			AudioCodecs                   string   `xml:"Audio_codecs"`
-// 			AudioLanguageList             string   `xml:"Audio_Language_List"`
-// 			CompleteName                  string   `xml:"Complete_name"`
-// 			FileName                      string   `xml:"File_name"`
-// 			FileExtension                 string   `xml:"File_extension"`
-// 			Format                        []string `xml:"Format"`
-// 			FormatURL                     string   `xml:"Format_Url"`
-// 			FormatExtensionsUsuallyUsed   string   `xml:"Format_Extensions_usually_used"`
-// 			CommercialName                string   `xml:"Commercial_name"`
-// 			FormatVersion                 string   `xml:"Format_version"`
-// 			Codec                         []string `xml:"Codec"`
-// 			CodecURL                      string   `xml:"Codec_Url"`
-// 			CodecExtensionsUsuallyUsed    string   `xml:"Codec_Extensions_usually_used"`
-// 			FileSize                      []string `xml:"File_size"`
-// 			Duration                      []string `xml:"Duration"`
-// 			OverallBitRate                []string `xml:"Overall_bit_rate"`
-// 			FrameRate                     []string `xml:"Frame_rate"`
-// 			FrameCount                    string   `xml:"Frame_count"`
-// 			StreamSize                    []string `xml:"Stream_size"`
-// 			ProportionOfThisStream        string   `xml:"Proportion_of_this_stream"`
-// 			FileLastModificationDate      string   `xml:"File_last_modification_date"`
-// 			FileLastModificationDateLocal string   `xml:"File_last_modification_date__local_"`
-// 			WritingApplication            []string `xml:"Writing_application"`
-// 			WritingLibrary                []string `xml:"Writing_library"`
-// 			StreamOrder                   string   `xml:"StreamOrder"`
-// 			ID                            []string `xml:"ID"`
-// 			UniqueID                      string   `xml:"Unique_ID"`
-// 			FormatInfo                    string   `xml:"Format_Info"`
-// 			FormatProfile                 string   `xml:"Format_profile"`
-// 			FormatSettings                string   `xml:"Format_settings"`
-// 			FormatSettingsCABAC           []string `xml:"Format_settings__CABAC"`
-// 			FormatSettingsReFrames        []string `xml:"Format_settings__ReFrames"`
-// 			InternetMediaType             string   `xml:"Internet_media_type"`
-// 			CodecID                       string   `xml:"Codec_ID"`
-// 			CodecIDURL                    string   `xml:"Codec_ID_Url"`
-// 			CodecFamily                   string   `xml:"Codec_Family"`
-// 			CodecInfo                     string   `xml:"Codec_Info"`
-// 			CodecProfile                  string   `xml:"Codec_profile"`
-// 			CodecSettings                 string   `xml:"Codec_settings"`
-// 			CodecSettingsCABAC            string   `xml:"Codec_settings__CABAC"`
-// 			CodecSettingsRefFrames        string   `xml:"Codec_Settings_RefFrames"`
-// 			BitRate                       []string `xml:"Bit_rate"`
-// 			Width                         []string `xml:"Width"`
-// 			Height                        []string `xml:"Height"`
-// 			PixelAspectRatio              string   `xml:"Pixel_aspect_ratio"`
-// 			DisplayAspectRatio            []string `xml:"Display_aspect_ratio"`
-// 			FrameRateMode                 []string `xml:"Frame_rate_mode"`
-// 			Resolution                    []string `xml:"Resolution"`
-// 			Colorimetry                   string   `xml:"Colorimetry"`
-// 			ColorSpace                    string   `xml:"Color_space"`
-// 			ChromaSubsampling             string   `xml:"Chroma_subsampling"`
-// 			BitDepth                      []string `xml:"Bit_depth"`
-// 			ScanType                      []string `xml:"Scan_type"`
-// 			Interlacement                 []string `xml:"Interlacement"`
-// 			BitsPixelFrame                string   `xml:"Bits__Pixel_Frame_"`
-// 			Delay                         []string `xml:"Delay"`
-// 			DelayOrigin                   []string `xml:"Delay__origin"`
-// 			EncodedLibraryName            string   `xml:"Encoded_Library_Name"`
-// 			EncodedLibraryVersion         string   `xml:"Encoded_Library_Version"`
-// 			EncodingSettings              string   `xml:"Encoding_settings"`
-// 			Language                      []string `xml:"Language"`
-// 			Default                       []string `xml:"Default"`
-// 			Forced                        []string `xml:"Forced"`
-// 			ColorRange                    string   `xml:"Color_range"`
-// 			ColourDescriptionPresent      string   `xml:"colour_description_present"`
-// 			MatrixCoefficients            string   `xml:"Matrix_coefficients"`
-// 			ModeExtension                 string   `xml:"Mode_extension"`
-// 			FormatSettingsEndianness      string   `xml:"Format_settings__Endianness"`
-// 			BitRateMode                   []string `xml:"Bit_rate_mode"`
-// 			ChannelS                      []string `xml:"Channel_s_"`
-// 			ChannelPositions              []string `xml:"Channel_positions"`
-// 			ChannelLayout                 string   `xml:"ChannelLayout"`
-// 			SamplingRate                  []string `xml:"Sampling_rate"`
-// 			SamplesCount                  string   `xml:"Samples_count"`
-// 			CompressionMode               []string `xml:"Compression_mode"`
-// 			DelayRelativeToVideo          []string `xml:"Delay_relative_to_video"`
-// 			Video0Delay                   []string `xml:"Video0_delay"`
-// 			Bsid                          string   `xml:"bsid"`
-// 			Dialnorm                      string   `xml:"dialnorm"`
-// 			DialnormString                string   `xml:"dialnorm_String"`
-// 			Compr                         string   `xml:"compr"`
-// 			ComprString                   string   `xml:"compr_String"`
-// 			Acmod                         string   `xml:"acmod"`
-// 			Lfeon                         string   `xml:"lfeon"`
-// 			DialnormAverage               string   `xml:"dialnorm_Average"`
-// 			DialnormAverageString         string   `xml:"dialnorm_Average_String"`
-// 			DialnormMinimum               string   `xml:"dialnorm_Minimum"`
-// 			DialnormMinimumString         string   `xml:"dialnorm_Minimum_String"`
-// 			DialnormMaximum               string   `xml:"dialnorm_Maximum"`
-// 			DialnormMaximumString         string   `xml:"dialnorm_Maximum_String"`
-// 			DialnormCount                 string   `xml:"dialnorm_Count"`
-// 			ComprAverage                  string   `xml:"compr_Average"`
-// 			ComprAverageString            string   `xml:"compr_Average_String"`
-// 			ComprMinimum                  string   `xml:"compr_Minimum"`
-// 			ComprMinimumString            string   `xml:"compr_Minimum_String"`
-// 			ComprMaximum                  string   `xml:"compr_Maximum"`
-// 			ComprMaximumString            string   `xml:"compr_Maximum_String"`
-// 			ComprCount                    string   `xml:"compr_Count"`
+// 			Type                     string `xml:"type,attr"`
+// 			StreamID                 string `xml:"streamid,attr"`
+// 			UniqueID                 string `xml:"Unique_ID"`
+// 			CompleteName             string `xml:"Complete_name"`
+// 			Format                   string `xml:"Format"`
+// 			FormatVersion            string `xml:"Format_version"`
+// 			FileSize                 string `xml:"File_size"`
+// 			Duration                 string `xml:"Duration"`
+// 			OverallBitRate           string `xml:"Overall_bit_rate"`
+// 			EncodedDate              string `xml:"Encoded_date"`
+// 			WritingApplication       string `xml:"Writing_application"`
+// 			WritingLibrary           string `xml:"Writing_library"`
+// 			DURATION                 string `xml:"DURATION"`
+// 			NUMBEROFFRAMES           string `xml:"NUMBER_OF_FRAMES"`
+// 			NUMBEROFBYTES            string `xml:"NUMBER_OF_BYTES"`
+// 			STATISTICSWRITINGAPP     string `xml:"_STATISTICS_WRITING_APP"`
+// 			STATISTICSWRITINGDATEUTC string `xml:"_STATISTICS_WRITING_DATE_UTC"`
+// 			STATISTICSTAGS           string `xml:"_STATISTICS_TAGS"`
+// 			ID                       string `xml:"ID"`
+// 			FormatInfo               string `xml:"Format_Info"`
+// 			FormatProfile            string `xml:"Format_profile"`
+// 			FormatSettingsCABAC      string `xml:"Format_settings__CABAC"`
+// 			FormatSettingsReFrames   string `xml:"Format_settings__ReFrames"`
+// 			CodecID                  string `xml:"Codec_ID"`
+// 			CodecIDInfo              string `xml:"Codec_ID_Info"`
+// 			CodecIDHint              string `xml:"Codec_ID_Hint"`
+// 			BitRate                  string `xml:"Bit_rate"`
+// 			NominalBitRate           string `xml:"Nominal_bit_rate"`
+// 			Width                    string `xml:"Width"`
+// 			Height                   string `xml:"Height"`
+// 			DisplayAspectRatio       string `xml:"Display_aspect_ratio"`
+// 			FrameRateMode            string `xml:"Frame_rate_mode"`
+// 			FrameRate                string `xml:"Frame_rate"`
+// 			OriginalFrameRate        string `xml:"Original_frame_rate"`
+// 			MinimumFrameRate         string `xml:"Minimum_frame_rate"`
+// 			MaximumFrameRate         string `xml:"Maximum_frame_rate"`
+// 			ColorSpace               string `xml:"Color_space"`
+// 			ChromaSubsampling        string `xml:"Chroma_subsampling"`
+// 			BitDepth                 string `xml:"Bit_depth"`
+// 			ScanType                 string `xml:"Scan_type"`
+// 			BitsPixelFrame           string `xml:"Bits__Pixel_Frame_"`
+// 			StreamSize               string `xml:"Stream_size"`
+// 			Language                 string `xml:"Language"`
+// 			Default                  string `xml:"Default"`
+// 			Forced                   string `xml:"Forced"`
+// 			ColorPrimaries           string `xml:"Color_primaries"`
+// 			TransferCharacteristics  string `xml:"Transfer_characteristics"`
+// 			MatrixCoefficients       string `xml:"Matrix_coefficients"`
+// 			ModeExtension            string `xml:"Mode_extension"`
+// 			FormatSettingsEndianness string `xml:"Format_settings__Endianness"`
+// 			EncodingSettings         string `xml:"Encoding_settings"`
+// 			BitRateMode              string `xml:"Bit_rate_mode"`
+// 			ChannelS                 string `xml:"Channel_s_"`
+// 			ChannelPositions         string `xml:"Channel_positions"`
+// 			SamplingRate             string `xml:"Sampling_rate"`
+// 			CompressionMode          string `xml:"Compression_mode"`
 // 		} `xml:"track"`
 // 	} `xml:"File"`
 // }
 
-// structure MediaInfo
-type MediaInfo_struct struct {
-	General General_struct
-	Video   []Video_struct
-	Audio   []Audio_struct
-	Text    []Text_struct
+// MediaInfoXML structure en retour de l'appel au programme 'mediainfo'
+type MediaInfoXML struct {
+	XMLName         xml.Name `xml:"MediaInfo"`
+	Version         string   `xml:"version,attr"`
+	CreatingLibrary struct {
+		Version string `xml:"version,attr"`
+	} `xml:"creatingLibrary"`
+	Media struct {
+		CompleteName string `xml:"ref,attr"`
+		Track        []struct {
+			Type                     string `xml:"type,attr"`
+			Typeorder                string `xml:"typeorder,attr"`
+			UniqueID                 string `xml:"UniqueID"`
+			VideoCount               string `xml:"VideoCount"`
+			AudioCount               string `xml:"AudioCount"`
+			TextCount                string `xml:"TextCount"`
+			MenuCount                string `xml:"MenuCount"`
+			FileExtension            string `xml:"FileExtension"`
+			Format                   string `xml:"Format"`
+			FormatVersion            string `xml:"Format_Version"`
+			FileSize                 string `xml:"FileSize"`
+			Duration                 string `xml:"Duration"`
+			OverallBitRate           string `xml:"OverallBitRate"`
+			NominalBitRate           string `xml:"NominalBitRate"`
+			FrameRate                string `xml:"FrameRate"`
+			FrameCount               string `xml:"FrameCount"`
+			StreamSize               string `xml:"StreamSize"`
+			IsStreamable             string `xml:"IsStreamable"`
+			Title                    string `xml:"Title"`
+			Movie                    string `xml:"Movie"`
+			EncodedDate              string `xml:"Encoded_Date"`
+			FileModifiedDate         string `xml:"File_Modified_Date"`
+			FileModifiedDateLocal    string `xml:"File_Modified_Date_Local"`
+			EncodedApplication       string `xml:"Encoded_Application"`
+			EncodedLibrary           string `xml:"Encoded_Library"`
+			StreamOrder              string `xml:"StreamOrder"`
+			ID                       string `xml:"ID"`
+			FormatProfile            string `xml:"Format_Profile"`
+			FormatLevel              string `xml:"Format_Level"`
+			FormatSettingsCABAC      string `xml:"Format_Settings_CABAC"`
+			FormatSettingsRefFrames  string `xml:"Format_Settings_RefFrames"`
+			CodecID                  string `xml:"CodecID"`
+			BitRate                  string `xml:"BitRate"`
+			Width                    string `xml:"Width"`
+			Height                   string `xml:"Height"`
+			SampledWidth             string `xml:"Sampled_Width"`
+			SampledHeight            string `xml:"Sampled_Height"`
+			PixelAspectRatio         string `xml:"PixelAspectRatio"`
+			DisplayAspectRatio       string `xml:"DisplayAspectRatio"`
+			FrameRateMode            string `xml:"FrameRate_Mode"`
+			ColorSpace               string `xml:"ColorSpace"`
+			ChromaSubsampling        string `xml:"ChromaSubsampling"`
+			BitDepth                 string `xml:"BitDepth"`
+			ScanType                 string `xml:"ScanType"`
+			Delay                    string `xml:"Delay"`
+			EncodedLibraryName       string `xml:"Encoded_Library_Name"`
+			EncodedLibraryVersion    string `xml:"Encoded_Library_Version"`
+			EncodedLibrarySettings   string `xml:"Encoded_Library_Settings"`
+			Language                 string `xml:"Language"`
+			Default                  string `xml:"Default"`
+			Forced                   string `xml:"Forced"`
+			ColourRange              string `xml:"colour_range"`
+			ColourDescriptionPresent string `xml:"colour_description_present"`
+			ColourPrimaries          string `xml:"colour_primaries"`
+			TransferCharacteristics  string `xml:"transfer_characteristics"`
+			MatrixCoefficients       string `xml:"matrix_coefficients"`
+			FormatSettingsEndianness string `xml:"Format_Settings_Endianness"`
+			BitRateMode              string `xml:"BitRate_Mode"`
+			Channels                 string `xml:"Channels"`
+			ChannelPositions         string `xml:"ChannelPositions"`
+			ChannelLayout            string `xml:"ChannelLayout"`
+			SamplesPerFrame          string `xml:"SamplesPerFrame"`
+			SamplingRate             string `xml:"SamplingRate"`
+			SamplingCount            string `xml:"SamplingCount"`
+			CompressionMode          string `xml:"Compression_Mode"`
+			DelaySource              string `xml:"Delay_Source"`
+			StreamSizeProportion     string `xml:"StreamSize_Proportion"`
+			ServiceKind              string `xml:"ServiceKind"`
+			ElementCount             string `xml:"ElementCount"`
+		} `xml:"track"`
+	} `xml:"media"`
 }
 
-// structure Générale
-type General_struct struct {
+// MediaInfo : structure MediaInfo (MediaInfo)
+type MediaInfo struct {
+	General MediaInfoGeneral
+	Video   []MediaInfoVideo
+	Audio   []MediaInfoAudio
+	Text    []MediaInfoText
+}
+
+// MediaInfoGeneral : structure Générale (General_struct)
+type MediaInfoGeneral struct {
 	Conteneur       string  // mkv
-	Format          string  // MPEG-4
-	FormatVersion   string  // Version 2
-	FileSize        float64 // 1.43 ( < 1.43 GiB)
-	Duration        int64   // 2413 (en sec < 40mn 13s)
-	DurationAff     int64   // 40
-	OverallBitRate  int64   // 5098 ( < 5 098 Kbps)
-	XFileSize       string  // 1.43 ( < 1.43 GiB)
-	XDuration       string  // 2413 (en sec < 40mn 13s)
-	XDurationAff    string  // 40
-	XOverallBitRate string  // 5098 ( < 5 098 Kbps)
-	AudioMultiPiste MultiPiste_struct
-	TextMultiPiste  MultiPiste_struct
+	Format          string  // Matroska
+	FormatVersion   string  // 4
+	FileSize        float64 // 1.89 ( < 2025275547 B)
+	Duration        int64   // 5315 ( < 5314.940 s)
+	DurationAff     int64   // 89
+	OverallBitRate  int64   // 3048 ( < 3048426 bps)
+	XFileSize       string  // 1.89 ( < 2025275547 B)
+	XDuration       string  // 5315 ( < 5314.940 s)
+	XDurationAff    string  // 89
+	XOverallBitRate string  // 3048 ( < 3048426 bps)
+	AudioMultiPiste MediaInfoMultiPiste
+	TextMultiPiste  MediaInfoMultiPiste
 }
 
-// structure Vidéo
-type Video_struct struct {
+// MediaInfoVideo : structure Vidéo (Video_struct)
+type MediaInfoVideo struct {
 	Format        string // AVC
-	FormatInfo    string // Advanced Video Codec
-	FormatProfile string // High@L4.0
+	FormatProfile string // High
+	FormatLevel   string // 4.1
 	CodecID       string // V_MPEG4/ISO/AVC
-	CodecIDInfo   string
 	CodecV        string
-	Duration      int64  // 2413 (en sec < 40mn 13s)
-	DurationAff   int64  // 40
-	BitRate       int64  // 4613 ( < 4 613 Kbps)
-	Width         int64  // 1920 ( < 1 920 pixels)
-	Height        int64  // 1080 ( < 1 080 pixels)
-	FrameRateMode string // Constant/Variable
+	Duration      int64  // 5315 ( < 5314.935000000 s)
+	DurationAff   int64  // 89
+	BitRate       int64  // 2600 ( < 2600000 bps)
+	Width         int64  // 1920
+	Height        int64  // 1080
+	FrameRateMode string // Constant/Variable ( < CFR)
 	FrameRate     string // 23.976 ( < 23.976 fps)
 	BitDepth      int64  // 8 ( < 8 bits)
-	Language      string // English
-	XDuration     string // 2413 (en sec < 40mn 13s)
-	XDurationAff  string // 40
-	XBitRate      string // 4613 ( < 4 613 Kbps)
-	XWidth        string // 1920 ( < 1 920 pixels)
-	XHeight       string // 1080 ( < 1 080 pixels)
+	Language      string // en
+	XDuration     string // 5315
+	XDurationAff  string // 89
+	XBitRate      string // 2600 ( < 2600000 bps)
+	XWidth        string // 1920
+	XHeight       string // 1080
 	XBitDepth     string // 8 ( < 8 bits)
 }
 
-// structure Audio
-type Audio_struct struct {
+// MediaInfoAudio : structure Audio (Audio_struct)
+type MediaInfoAudio struct {
 	Format           string // AC-3
-	FormatInfo       string // Audio Coding 3
 	CodecID          string // A_AC3
-	CodecIDInfo      string
 	CodecA           string
-	Duration         int64  // 2413 (en sec < 40mn 13s)
-	DurationAff      int64  // 40
-	BitRateMode      string // Constant/Variable
-	BitRate          int64  // 384 ( < 384 Kbps)
+	Duration         int64  // 5315 (5314.656000000 s)
+	DurationAff      int64  // 89
+	BitRateMode      string // Constant/Variable (CBR)
+	BitRate          int64  // 448 ( < 448 Kbps)
 	Channel          int64  // 6 ( < 6 channels)
 	ChannelPositions string // Front: L C R, Side: L R, LFE
-	ChannelDetail    ChannelDetail_struct
+	ChannelDetail    MediaInfoChannelDetail
 	ChannelAff       string  // 6ch: Surround
 	SamplingRate     float64 // 48.0 ( < 48.0 KHz)
 	BitDepth         int64   // 16 ( < 16 bits)
 	CompressionMode  string  // Lossy
-	Language         string  // English
-	XDuration        string  // 2413 (en sec < 40mn 13s)
-	XDurationAff     string  // 40
-	XBitRate         string  // 384 ( < 384 Kbps)
+	Language         string  // fr
+	XDuration        string  // 5315 (5314.656000000 s)
+	XDurationAff     string  // 89
+	XBitRate         string  // 448 ( < 448 Kbps)
 	XChannel         string  // 6 ( < 6 channels)
 	XSamplingRate    string  // 48.0 ( < 48.0 KHz)
 	XBitDepth        string  // 16 ( < 16 bits)
 }
 
-// structure Channel
-type ChannelDetail_struct struct {
+// MediaInfoChannelDetail : structure Channel (ChannelDetail_struct)
+type MediaInfoChannelDetail struct {
 	FrontL bool
 	FrontC bool
 	FrontR bool
@@ -349,22 +310,21 @@ type ChannelDetail_struct struct {
 	Sub    bool
 }
 
-// structure sous-titre
-type Text_struct struct {
-	Format      string // UTF-8
-	CodecID     string // S_TEXT/UTF8
-	CodecIDInfo string // UTF-8 Plain Text
-	Language    string // English
+// MediaInfoText : structure sous-titre (Text_struct)
+type MediaInfoText struct {
+	Format   string // UTF-8
+	CodecID  string // S_TEXT/UTF8
+	Language string // fr
 }
 
-// structure sous-titre
-type MultiPiste_struct struct {
+// MediaInfoMultiPiste : structure sous-titre (MultiPiste_struct)
+type MediaInfoMultiPiste struct {
 	Format   string // UTF-8 / UTF-8
-	Language string // English / French
+	Language string // en / fr
 	NoFrench bool
 }
 
-// init() : initialisation du composant
+// init : initialisation du composant
 func init() {
 	start = time.Now()
 
@@ -379,7 +339,7 @@ func init() {
 	tsIO.PrintConsole("App path : " + appRep)
 }
 
-// IsMediaFile() - détemine si le suffixe du fichier correspond à un media (audio ou vidéo)
+// IsMediaFile - determine si le suffixe du fichier correspond à un media (audio ou vidéo)
 func IsMediaFile(ext string) bool {
 	result := false
 	if _, ok := containers[strings.ToLower(ext)]; ok {
@@ -389,43 +349,21 @@ func IsMediaFile(ext string) bool {
 	return result
 }
 
-// // GetMediaInfo() : récupère les infos du média dans MediainfoXml (données brutes)
-// func GetMediaInfoFullData(fileName string) MediainfoFullXml {
-// 	var mediainfo_cmd string
-// 	mediainfo_cmd, err := exec.LookPath("mediainfo")
-// 	if err != nil {
-// 		panic(fmt.Sprint("  could not find path to 'mediainfo': ", err))
-// 	}
-// 	tsIO.PrintConsole("-- found 'mediainfo' command: ", mediainfo_cmd)
-
-// 	out, err := exec.Command(mediainfo_cmd, "-f --Output=XML", fileName).Output()
-// 	if err != nil {
-// 		panic(fmt.Sprint("Command: mediainfo ", err))
-// 	}
-// 	var result MediainfoFullXml
-// 	err = xml.Unmarshal(out, &result) //DECODAGE
-// 	if err != nil {
-// 		panic(fmt.Sprint("GetMediaInfoData: Unmarshal ", err))
-// 	}
-
-// 	return result
-// }
-
-// GetMediaInfo() : récupère les infos du média dans MediainfoXml (données brutes)
-func GetMediaInfoData(fileName string) MediainfoXml {
-	var mediainfo_cmd string
-	mediainfo_cmd, err := exec.LookPath("mediainfo")
+// GetMediaInfoData : récupère les infos du média dans mediainfoXML1404 (données brutes)
+func GetMediaInfoData(fileName string) MediaInfoXML {
+	var mediainfoCmd string
+	mediainfoCmd, err := exec.LookPath("mediainfo")
 	if err != nil {
 		panic(fmt.Sprint("  could not find path to 'mediainfo': ", err))
 	}
-	tsIO.PrintConsole("-- found 'mediainfo' command: ", mediainfo_cmd)
+	tsIO.PrintConsole("-- found 'mediainfo' command: ", mediainfoCmd)
 
-	out, err := exec.Command(mediainfo_cmd, "--Output=XML", fileName).Output()
+	out, err := exec.Command(mediainfoCmd, "--Output=XML", fileName).Output()
 	if err != nil {
 		panic(fmt.Sprint("Command: mediainfo ", err))
 	}
-	var result MediainfoXml
-	err = xml.Unmarshal(out, &result) //DECODAGE
+	var result MediaInfoXML
+	err = xml.Unmarshal(out, &result) //DÉCODAGE
 	if err != nil {
 		panic(fmt.Sprint("GetMediaInfoData: Unmarshal ", err))
 	}
@@ -433,16 +371,16 @@ func GetMediaInfoData(fileName string) MediainfoXml {
 	return result
 }
 
-// GetMediaInfo() : récupère les infos du média dans MediaInfo_struct
-func GetMediaInfo(fileName string) MediaInfo_struct {
+// GetMediaInfo : récupère les infos du média dans MediaInfo
+func GetMediaInfo(fileName string) MediaInfo {
 	result := GetMediaInfoData(fileName)
 
 	//	fmt.Println(result)
-	var mediaInfo MediaInfo_struct
-	for _, track := range result.File.Track {
+	var mediaInfo MediaInfo
+	for _, track := range result.Media.Track {
 		switch track.Type {
 		case "General":
-			var general General_struct
+			var general MediaInfoGeneral
 			general.Format = track.Format
 			general.FormatVersion = track.FormatVersion
 			general.FileSize, general.XFileSize = extractFileSize(track.FileSize)
@@ -451,19 +389,22 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate, track.NominalBitRate)
 			mediaInfo.General = general
 		case "Video":
-			var video Video_struct
+			var video MediaInfoVideo
 			video.Format = track.Format
-			video.FormatInfo = track.FormatInfo
 			video.FormatProfile = track.FormatProfile
+			video.FormatLevel = track.FormatLevel
 			video.CodecID = track.CodecID
-			video.CodecIDInfo = track.CodecIDInfo
-			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.CodecID, track.CodecIDHint)
+			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.FormatLevel, video.CodecID)
 			video.Duration, video.XDuration = extractDuration(track.Duration)
 			video.DurationAff, video.XDurationAff = extractDurationMN(video.Duration)
 			video.BitRate, video.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate)
 			video.Width, video.XWidth = extractSize(track.Width)
 			video.Height, video.XHeight = extractSize(track.Height)
-			video.FrameRateMode = track.FrameRateMode
+			if track.FrameRateMode == "CFR" {
+				video.FrameRateMode = "Constant"
+			} else {
+				video.FrameRateMode = "Variable"
+			}
 			if track.FrameRate != "" {
 				video.FrameRate = transcodeVideoFrameRate(extractFrameRate(track.FrameRate))
 			} else if track.OverallBitRate != "" {
@@ -473,17 +414,15 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			video.Language = track.Language
 			mediaInfo.Video = append(mediaInfo.Video, video)
 		case "Audio":
-			var audio Audio_struct
+			var audio MediaInfoAudio
 			audio.Format = track.Format
-			audio.FormatInfo = track.FormatInfo
 			audio.CodecID = track.CodecID
-			audio.CodecIDInfo = track.CodecIDInfo
-			audio.CodecA = getCodeCodecAudio(audio.Format, audio.CodecID, track.CodecIDHint, track.FormatVersion, track.FormatProfile)
+			audio.CodecA = getCodeCodecAudio(audio.Format, audio.CodecID)
 			audio.Duration, audio.XDuration = extractDuration(track.Duration)
 			audio.DurationAff, audio.XDurationAff = extractDurationMN(audio.Duration)
 			audio.BitRateMode = track.BitRateMode
 			audio.BitRate, audio.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate)
-			audio.Channel, audio.XChannel = extractChannel(track.ChannelS)
+			audio.Channel, audio.XChannel = extractChannel(track.Channels)
 			audio.ChannelPositions = track.ChannelPositions
 			audio.ChannelDetail = getChannelDetail(track.ChannelPositions)
 			audio.ChannelAff = getChannelAff(audio.Channel)
@@ -493,10 +432,9 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 			audio.Language = track.Language
 			mediaInfo.Audio = append(mediaInfo.Audio, audio)
 		case "Text":
-			var text Text_struct
+			var text MediaInfoText
 			text.Format = track.Format
 			text.CodecID = track.CodecID
-			text.CodecIDInfo = track.CodecIDInfo
 			text.Language = track.Language
 			mediaInfo.Text = append(mediaInfo.Text, text)
 		}
@@ -507,8 +445,8 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		for _, audio := range mediaInfo.Audio {
 			format = append(format, audio.Format)
 			lang = append(lang, audio.Language)
-			if audio.Language != "French" {
-				mediaInfo.General.AudioMultiPiste.NoFrench = true
+			if audio.Language != "fr" {
+				mediaInfo.General.AudioMultiPiste.NoFrench = false
 			}
 		}
 		mediaInfo.General.AudioMultiPiste.Format = strings.Join(format, " / ")
@@ -521,8 +459,8 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		for _, text := range mediaInfo.Text {
 			format = append(format, text.Format)
 			lang = append(lang, text.Language)
-			if text.Language != "French" {
-				mediaInfo.General.TextMultiPiste.NoFrench = true
+			if text.Language != "fr" {
+				mediaInfo.General.TextMultiPiste.NoFrench = false
 			}
 		}
 		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
@@ -532,12 +470,10 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
 
 	if len(mediaInfo.Video) == 0 {
-		var video Video_struct
+		var video MediaInfoVideo
 		video.Format = "?"
-		video.FormatInfo = "?"
 		video.FormatProfile = "?"
 		video.CodecID = "?"
-		video.CodecIDInfo = "?"
 		video.CodecV = "?"
 		video.Duration, video.XDuration = 0, "?"
 		video.DurationAff, video.XDurationAff = 0, "?"
@@ -550,11 +486,9 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 		mediaInfo.Video = append(mediaInfo.Video, video)
 	}
 	if len(mediaInfo.Audio) == 0 {
-		var audio Audio_struct
+		var audio MediaInfoAudio
 		audio.Format = "?"
-		audio.FormatInfo = "?"
 		audio.CodecID = "?"
-		audio.CodecIDInfo = "?"
 		audio.CodecA = "?"
 		audio.Duration, audio.XDuration = 0, "?"
 		audio.DurationAff, audio.XDurationAff = 0, "?"
@@ -574,147 +508,109 @@ func GetMediaInfo(fileName string) MediaInfo_struct {
 	return mediaInfo
 }
 
-// extractFileSize() return size in GiB (1.43 GiB --> 1.43  ou  785 MiB --> 0.766)
+// extractFileSize return size in GiB (2025275547 (B) --> 1.89 (GiB))
 func extractFileSize(size string) (float64, string) {
 	if size == "" {
 		return 0.00, "?"
-	} else {
-		mots := strings.Fields(size)
-		val, err := strconv.ParseFloat(mots[0], 64)
-		if err != nil {
-			return 0.00, "-X-"
-		}
-		if mots[1] == "MiB" {
-			val /= 1024
-		}
-		if val < 0.1 {
-			val = math.RoundToEven(val*100) / 100
-			return val, strconv.FormatFloat(val, 'f', 2, 64)
-		} else {
-			val = math.RoundToEven(val*10) / 10
-			return val, strconv.FormatFloat(val, 'f', 1, 64)
-		}
 	}
+	result, err := strconv.ParseFloat(size, 64)
+	if err != nil {
+		return 0, "-X-"
+	}
+	result /= 1024 * 1024 * 1024
+	result = math.RoundToEven(result*100) / 100
+	return result, strconv.FormatFloat(result, 'f', 2, 64)
 }
 
-// extractSize() return size in pixel (1 920 pixels --> 1920)
+// extractSize return size in pixel (1920 pixels --> 1920)
 func extractSize(size string) (int64, string) {
 	if size == "" {
 		return 0, "?"
-	} else {
-		mots := strings.Fields(size)
-		var tmp string
-		for _, val := range mots[:len(mots)-1] {
-			tmp += val
-		}
-		result, err := strconv.ParseFloat(tmp, 64)
-		if err != nil {
-			return 0, "-X-"
-		}
-		return int64(result), strconv.FormatInt(int64(result), 10)
 	}
+	result, err := strconv.ParseInt(size, 10, 64)
+	if err != nil {
+		return 0, "-X-"
+	}
+	return result, strconv.FormatInt(result, 10)
 }
 
-// extractDuration() return durée in sec (40mn 13s --> 2413 (int & string))
+// extractDuration return durée in sec (5314.940 (s) --> 5315 (s))
 func extractDuration(duration string) (int64, string) {
 	if duration == "" {
 		return 0, "?"
-	} else {
-		duration := strings.ReplaceAll(strings.Join(strings.Fields(duration), ""), "mn", "m") // 40mn 13s  ==>  40m13s
-		duree, err := time.ParseDuration(duration)
-		if err != nil {
-			return 0, "-X-"
-		}
-		result := int64(duree.Seconds())
-
-		return result, strconv.FormatInt(result, 10)
 	}
+	result, err := strconv.ParseFloat(duration, 64)
+	if err != nil {
+		return 0, "-X-"
+	}
+	result = math.RoundToEven(result)
+	return int64(result), strconv.FormatInt(int64(result), 10)
 }
 
-// extractDurationMN() convertir la durée sec -> mn
+// extractDurationMN convertir la durée sec -> mn
 func extractDurationMN(duration int64) (int64, string) {
 	if duration == 0 {
 		return 0, "?"
-	} else {
-		result := (duration + 30) / 60
-		return result, strconv.FormatInt(result, 10)
 	}
+	result := (duration + 30) / 60
+	return result, strconv.FormatInt(result, 10)
 }
 
-// extractBitRate() return bitRate en Kbps (5 098 Kbps  --> 5098)
+// extractBitRate return bitRate en Kbps (3048426 (bps) --> 3048 (Kbps))
 func extractBitRate(bitRate string, nominalBitRate string) (int64, string) {
 	if bitRate == "" && nominalBitRate == "" {
 		return 0, "?"
-	} else {
-		if bitRate == "" {
-			bitRate = nominalBitRate
-		}
-		mots := strings.Fields(bitRate)
-		var tmp string
-		for _, val := range mots[:len(mots)-1] {
-			if val == "Kbps" || val == "Mbps" {
-				break
-			}
-			if _, err := strconv.ParseFloat(val, 64); err == nil {
-				tmp += val
-			}
-		}
-		result, err := strconv.ParseFloat(tmp, 64)
-		if err != nil {
-			return 0, "-X-"
-		}
-		if mots[len(mots)-1] == "Mbps" {
-			result *= 1024
-		}
-		return int64(result), strconv.FormatInt(int64(result), 10)
 	}
+	if bitRate == "" {
+		bitRate = nominalBitRate
+	}
+	result, err := strconv.ParseInt(bitRate, 10, 64)
+	if err != nil {
+		return 0, "-X-"
+	}
+	result /= 1024
+	return int64(result), strconv.FormatInt(int64(result), 10)
 }
 
-// extractFrameRate() return frameRate in fps (23.976 fps --> 23.976)
+// extractFrameRate return frameRate in fps (23.976 (fps) --> 23.976 (fps))
 func extractFrameRate(frame string) float64 {
 	if frame == "" {
 		return 0.0
-	} else {
-		mots := strings.Fields(frame)
-		val, err := strconv.ParseFloat(mots[0], 64)
-		if err != nil {
-			return 0.0
-		}
-		return val
 	}
+	val, err := strconv.ParseFloat(frame, 64)
+	if err != nil {
+		return 0.0
+	}
+	return val
 }
 
-// extractBitDepth() return bitDepth in bits (8 bits --> 8)
+// extractBitDepth return bitDepth in bits (8 (bits) --> 8 (bits))
 func extractBitDepth(bitDepth string) (int64, string) {
 	if bitDepth == "" {
 		return 0, "?"
-	} else {
-		mots := strings.Fields(bitDepth)
-		val, err := strconv.ParseFloat(mots[0], 64)
-		if err != nil {
-			return 0, "-X-"
-		}
-		return int64(val), strconv.FormatInt(int64(val), 10)
 	}
+	result, err := strconv.ParseInt(bitDepth, 10, 64)
+	if err != nil {
+		return 0, "-X-"
+	}
+	return result, strconv.FormatInt(result, 10)
 }
 
-// extractChannel() return nb audio channel (6 channels --> 6)
+// extractChannel return nb audio channel (6 --> 6)
 func extractChannel(channel string) (int64, string) {
 	if channel == "" {
 		return 0, "?"
-	} else {
-		mots := strings.Fields(channel)
-		val, err := strconv.ParseFloat(mots[0], 64)
-		if err != nil {
-			return 0, "-X-"
-		}
-		return int64(val), strconv.FormatInt(int64(val), 10)
 	}
+	result, err := strconv.ParseInt(channel, 10, 64)
+	if err != nil {
+		return 0, "-X-"
+	}
+	return result, strconv.FormatInt(result, 10)
 }
 
-// getChannelDetail() // Front: L C R, Side: L R, LFE
-func getChannelDetail(channelPositions string) ChannelDetail_struct {
-	var channelDetail ChannelDetail_struct
+// getChannelDetail // Front: L C R, Side: L R, LFE
+func getChannelDetail(channelPositions string) MediaInfoChannelDetail {
+	var channelDetail MediaInfoChannelDetail
 	if channelPositions != "" {
 		lines := strings.Split(channelPositions, ",")
 		for _, val := range lines {
@@ -749,128 +645,145 @@ func getChannelDetail(channelPositions string) ChannelDetail_struct {
 	return channelDetail
 }
 
-//### getChannelAff() - transcode les canaux audio pour faciliter la lecture
+//### getChannelAff - transcode les canaux audio pour faciliter la lecture
 func getChannelAff(channel int64) string {
 	var retour string
 	switch channel {
 	case 1:
-		retour = CHANNEl1 // "1ch: Mono"
+		retour = channel1 // "1ch: Mono"
 	case 2:
-		retour = CHANNEl2 // "2ch: Stéréo"
+		retour = channel2 // "2ch: Stéréo"
 	case 3:
-		retour = CHANNEl3 // "3ch: Stéréo 2.1"
+		retour = channel3 // "3ch: Stéréo 2.1"
 	case 5:
-		retour = CHANNEl5 // "5ch: Surround"
+		retour = channel5 // "5ch: Surround"
 	case 6:
-		retour = CHANNEl6 // "6ch: Surround"
+		retour = channel6 // "6ch: Surround"
 	case 8:
-		retour = CHANNEl8 // "8ch: Surround +"
+		retour = channel8 // "8ch: Surround +"
 	default:
 		retour = strconv.FormatInt(channel, 10)
 	}
 	return retour
 }
 
-// extractSamplingRate() return sampling rate in Khz  (48.0 KHz --> 48.0)
+// extractSamplingRate return sampling rate in Khz  (48000 (Hz) --> 48 (KHz)) et (44100 (Hz) --> 44.1 (KHz))
 func extractSamplingRate(rate string) (float64, string) {
 	if rate == "" {
 		return 0.0, "?"
-	} else {
-		var valX string
-		mots := strings.Fields(rate)
-		val, err := strconv.ParseFloat(mots[0], 64)
-		if err != nil {
-			return 0.0, "-X-"
-		}
-		if strings.HasSuffix(mots[0], ".0") {
-			valX = strconv.FormatInt(int64(val), 10)
-		} else {
-			valX = strconv.FormatFloat(val, 'f', 1, 64)
-		}
-		return val, valX
 	}
+	result, err := strconv.ParseFloat(rate, 64)
+	if err != nil {
+		return 0.0, "-X-"
+	}
+	result /= 1000
+	var resultX string
+	if result == float64(int64(result)) {
+		resultX = strconv.FormatInt(int64(result), 10)
+	} else {
+		resultX = strconv.FormatFloat(result, 'f', 1, 64)
+	}
+	return result, resultX
 }
 
-//### getCodecVideo() - transcode le codec vidéo pour faciliter la lecture
-//		Format: 'AVC'
-//		FormatInfo: 'Advanced Video Codec'
-//		FormatProfile: 'High@L4.1'
-//		CodecID: 'V_MPEG4/ISO/AVC'
-//		CodecIDInfo
-
-func getCodecVideo(format string, formatProfile string, codecID string, codecIDHint string) string {
-	if format == "" && formatProfile == "" && codecID == "" && codecIDHint == "" {
+//### getCodecVideo - transcode le codec vidéo pour faciliter la lecture
+// 		format        : 'AVC'
+// 		formatProfile : 'High'
+// 		formatLevel   : '4.1'
+// 		codecID       : 'V_MPEG4/ISO/AVC'
+func getCodecVideo(format string, formatProfile string, formatLevel string, codecID string) string {
+	if format == "" && formatProfile == "" && formatLevel == "" && codecID == "" {
 		return "????"
+	}
+	if formatLevel != "" && len(formatLevel) == 1 && strings.ToUpper(format) == "AVC" {
+		formatLevel += ".0"
 	}
 
 	var codecV string
-	if strings.ToUpper(codecIDHint) == "DIVX 3 LOW" {
-		return "DivX 3 Low"
-	}
-	//-------------------------------
-	switch strings.ToUpper(codecID) {
-	case "DX50":
-		codecV = "DivX 5"
-	case "XVID":
-		codecV = "XviD"
-	case "DIV3":
-		codecV = "DivX 3"
-		if strings.ToUpper(codecIDHint) == "DIVX 3 LOW" {
-			codecV = "DivX 3 Low"
-		}
+
+	switch strings.ToUpper(format) {
+	case "AVC":
+		codecV = "X264" + " - " + formatLevel
+	case "HEVC":
+		codecV = "X265"
+	case "THEORA":
+		codecV = "Theora"
 	default:
-		switch strings.ToUpper(format) {
-		case "XVID":
-			codecV = "XviD"
-		case "DIV3":
-			codecV = "DivX 3"
-		case "DIV4":
-			codecV = "DivX 4"
-		case "MPEGVIDEO", "MPEG VIDEO": //&& codec == "mpeg-1v" {
-			codecV = "MPEG-1"
-		case "MPEG-4 VISUAL":
-			switch strings.ToUpper(codecID) {
-			case "MP42":
-				codecV = "MPEG-4"
-			case "DIVX":
-				codecV = "DivX 4"
-			case "XVID", "V_MS/VFW/FOURCC / XVID":
-				codecV = "XviD"
-			case "V_MS/VFW/FOURCC / DX50":
-				codecV = "DivX 5"
-			default:
-				codecV = "MPEG-4"
-			}
-		case "MPEG-4":
-			codecV = format
-		case "AVC":
-			codecV = "X264"
-			mots := strings.Split(formatProfile, "@")
-			val := mots[1][1:]
-			if !strings.Contains(val, ".") {
-				val += ".0"
-			}
-			codecV += " - " + val
-		case "HEVC":
-			codecV = "X265"
-		default:
-			codecV = "????"
-		}
+		codecV = "????"
 	}
 	return codecV
 }
 
-//### getCodeCodecAudio() - transcode le codec audio pour faciliter la lecture
-func getCodeCodecAudio(format string, codec string, codecHint string, formatVersion string, formatProfile string) string {
+// //### getCodecVideo - transcode le codec vidéo pour faciliter la lecture
+// //		Format: 'AVC'
+// //		FormatInfo: 'Advanced Video Codec'
+// //		FormatProfile: 'High@L4.1'
+// //		CodecID: 'V_MPEG4/ISO/AVC'
+// //		CodecIDInfo
+
+// func getCodecVideoOLD(format string, formatProfile string, codecID string, codecIDHint string) string {
+// 	if format == "" && formatProfile == "" && codecID == "" && codecIDHint == "" {
+// 		return "????"
+// 	}
+
+// 	var codecV string
+// 	if codecIDHint == "divx 3 low" {
+// 		return "DivX 3 Low"
+// 	}
+// 	//-------------------------------
+// 	switch strings.ToUpper(codecID) {
+// 	case "DX50":
+// 		codecV = "DivX 5"
+// 	case "XVID":
+// 		codecV = "XviD"
+// 	default:
+// 		switch strings.ToUpper(format) {
+// 		case "XVID":
+// 			codecV = "XviD"
+// 		case "DIV3":
+// 			codecV = "DivX 3"
+// 		case "DIV4":
+// 			codecV = "DivX 4"
+// 		case "MPEGVIDEO", "MPEG VIDEO": //&& codec == "mpeg-1v" {
+// 			codecV = "MPEG-1"
+// 		case "MPEG-4VISUAL":
+// 			switch strings.ToUpper(codecID) {
+// 			case "MP42":
+// 				codecV = "MPEG-4"
+// 			case "DIVX":
+// 				codecV = "DivX 4"
+// 			case "XVID":
+// 				codecV = "XviD"
+// 			default:
+// 				codecV = "MPEG-4"
+// 			}
+// 		case "MPEG-4":
+// 			codecV = format
+// 		case "AVC":
+// 			codecV = "X264"
+// 			mots := strings.Split(formatProfile, "@")
+// 			val := mots[1][1:]
+// 			if !strings.Contains(val, ".") {
+// 				val += ".0"
+// 			}
+// 			codecV += " - " + val
+// 		case "HEVC":
+// 			codecV = "X265"
+// 		default:
+// 			codecV = "????"
+// 		}
+// 	}
+// 	return codecV
+// }
+
+//### getCodeCodecAudio - transcode le codec audio pour faciliter la lecture
+//		format     : 'AC-3'
+//		codecID    : 'A_AC3'
+
+func getCodeCodecAudio(format string, codecID string) string {
 	var codecA string
-	if strings.ToUpper(format) == "MPEG AUDIO" && strings.ToUpper(formatVersion) == "VERSION 1" && strings.ToUpper(formatProfile) == "LAYER 3" {
+	if strings.ToUpper(format) == "MPEG AUDIO" {
 		codecA = "MP3"
-	} else if strings.ToUpper(format) == "MPEG AUDIO" && strings.ToUpper(formatVersion) == "VERSION 1" && strings.ToUpper(formatProfile) == "LAYER 2" {
-		codecA = "MP2"
-	} else if strings.ToUpper(codecHint) == "MP3" || strings.ToUpper(codec) == "MPA1L3" {
-		codecA = "MP3"
-	} else if strings.ToUpper(codecHint) == "MP2" || strings.ToUpper(codec) == "MPA1L2" {
-		codecA = "MP2"
 	} else if strings.ToUpper(format) == "VORBIS" {
 		codecA = "Vorbis"
 	} else {
@@ -878,6 +791,25 @@ func getCodeCodecAudio(format string, codec string, codecHint string, formatVers
 	}
 	return codecA
 }
+
+// //### getCodeCodecAudioOLD - transcode le codec audio pour faciliter la lecture
+// func getCodeCodecAudioOLD(format string, codec string, codecHint string, formatVersion string, formatProfile string) string {
+// 	var codecA string
+// 	if strings.ToUpper(format) == "MPEG AUDIO" && strings.ToUpper(formatVersion) == "VERSION 1" && strings.ToUpper(formatProfile) == "LAYER 3" {
+// 		codecA = "MP3"
+// 	} else if strings.ToUpper(format) == "MPEG AUDIO" && strings.ToUpper(formatVersion) == "VERSION 1" && strings.ToUpper(formatProfile) == "LAYER 2" {
+// 		codecA = "MP2"
+// 	} else if strings.ToUpper(codecHint) == "MP3" || strings.ToUpper(codec) == "MPA1L3" {
+// 		codecA = "MP3"
+// 	} else if strings.ToUpper(codecHint) == "MP2" || strings.ToUpper(codec) == "MPA1L2" {
+// 		codecA = "MP2"
+// 	} else if strings.ToUpper(format) == "VORBIS" {
+// 		codecA = "Vorbis"
+// 	} else {
+// 		codecA = strings.ToUpper(format)
+// 	}
+// 	return codecA
+// }
 
 //### transcodeVideoFrameRate - transcode le framerate vidéo pour faciliter la lecture
 func transcodeVideoFrameRate(frameRate float64) string {
@@ -887,7 +819,7 @@ func transcodeVideoFrameRate(frameRate float64) string {
 		frameRates := []float64{23.000, 23.976, 24.000, 25.000, 26.000, 29.970, 30.000, 48.000, 50.000, 60.000}
 		for _, val := range frameRates {
 			if val == frameRate {
-				result = strconv.FormatFloat(val, 'f', 3, 64) // 3 decimales
+				result = strconv.FormatFloat(val, 'f', 3, 64) // 3 décimales
 				break
 			}
 		}

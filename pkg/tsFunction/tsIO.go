@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const myRep = "/home/jluc1404x/.go/TableauDeBord"
+const myRep = "/home/jluc2004x/.Script_GO"
 
 var TraceLog *bool     //trace dans le fichier log
 var TraceConsole *bool //trace sur la console
@@ -89,7 +89,7 @@ func OpenNewFileRW(fic string) (*os.File, error) {
 	return fileLog, err
 }
 
-//Ecriture dans un fichier de données "struct" au format json
+//Écriture dans un fichier de données "struct" au format json
 func WriteJsonFile(filename string, data interface{}) error {
 	fileContent, err := json.Marshal(data)
 	if err == nil {
@@ -177,14 +177,14 @@ func ReadFileInTab(fileName string, cleVal string) ([]string, error) {
 	return enrgs, err
 }
 
-// Ecriture sur le fichier log
+// Écriture sur le fichier log
 func PrintLog(message string) {
 	if *TraceLog {
 		fileLog.WriteString(message)
 	}
 }
 
-// Ecriture sur la console
+// Écriture sur la console
 func PrintConsole(message ...interface{}) {
 	if *TraceConsole {
 		fmt.Println(message...)
@@ -197,7 +197,7 @@ func Trace(message ...interface{}) {
 	PrintConsole(message...)
 }
 
-// Ecriture sur la console
+// Écriture sur la console
 //func PrintConsole(message string) {
 //	if *TraceConsole {
 //		fmt.Println(message)
@@ -210,9 +210,9 @@ func Trace(message ...interface{}) {
 //	PrintConsole(message)
 //}
 
-// Ecriture sur la console
-//func FmtConsole(a ...interface{}) {
-//	if *TraceConsole {
-//		fmt.Println(a...)
-//	}
-//}
+// Écriture sur la console
+func FmtConsole(a ...interface{}) {
+	if *TraceConsole {
+		fmt.Println(a...)
+	}
+}
