@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -122,22 +122,29 @@ func PopLine(filename string, val string) error {
 
 // récupère le répertoire de l'application
 func GetAppPath() (string, error) {
-	pid := os.Getpid()
-	lnk := "/proc/" + strconv.Itoa(pid) + "/exe"
-	appRep, err := os.Readlink(lnk)
+	appPath, err := os.Executable()
 	if err == nil {
-		parts := strings.Split(appRep, "/")
-		if parts[1] == "tmp" && strings.Contains(parts[2], "go-build") {
-			appRep = myRep
-		} else {
-			appRep = ""
-			for idx := 1; idx < len(parts)-1; idx++ {
-				appRep += "/" + parts[idx]
-			}
+		appPath = filepath.Dir(appPath)
+		PrintConsole("appPath - os.Executable()           : " + appPath)
 
+		appPath, err = filepath.EvalSymlinks(appPath)
+		if err == nil {
+			PrintConsole("appPath - filepath.EvalSymlinks(...): " + appPath)
+
+			parts := strings.Split(appPath, string(os.PathSeparator))
+			PrintConsole(parts)
+			PrintConsole(filepath.Join(parts...))
+			if parts[1] == "tmp" && strings.Contains(parts[2], "go-build") {
+				PrintConsole("Session de DEV.")
+				appPath = myRep
+			}
+			if parts[len(parts)-1] == "__debug_bin" {
+				PrintConsole("Session de DEBUG")
+				appPath = myRep
+			}
 		}
 	}
-	return appRep, err
+	return appPath, err
 }
 
 // ReadFileForValue(...) parcourt un fichier 'fileName' ligne à ligne à la recherche du mot clé 'cleVal' et retourne l'enregistrement le contenant
