@@ -1,4 +1,4 @@
-package tsFunction
+package tsfunction
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// purgeString() : supprime les "\n" et les espaces avant et après le string
-//		entity	: est un pointeur sur la struture à nettoyer
+// PurgeString : supprime les "\n" et les espaces avant et après le string
+//		entity	: est un pointeur sur la structure à nettoyer
 // ex purgeString(&movies)
 func PurgeString(entity interface{}) {
 	entityValue := reflect.ValueOf(entity).Elem()
@@ -31,8 +31,8 @@ func PurgeString(entity interface{}) {
 	}
 }
 
-// printAll() : imprime l'integralité d'une structure
-//		entity	: la struture à imprimer
+// PrintAll : imprime l'intégralité d'une structure
+//		entity	: la structure à imprimer
 //		depth	: toujours 0 (usage interne pour indenter l'impression lors de struc ou de slice)
 //		name	: "" ou nom externe de l'élément (usage interne)
 //		indent	: toujours true (usage interne pour ne pas indenter après un slice)

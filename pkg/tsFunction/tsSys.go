@@ -1,17 +1,18 @@
-package tsFunction
+package tsfunction
 
 import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-type file_struct struct {
+type fileStruct struct {
 	CpuN      string
 	ChargeIo  int64
 	ChargeUsr int64
@@ -135,8 +136,8 @@ func ReadStatsUp(connect string) int64 {
 }
 
 // GetDataCPU : recherche les infos du CPU
-func GetDataCPU(core string) file_struct {
-	var file file_struct
+func GetDataCPU(core string) fileStruct {
+	var file fileStruct
 	enrg, err := ReadFileForValue("/proc/stat", "cpu"+core)
 	if err != nil {
 		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
@@ -281,4 +282,14 @@ func CallNotifySend(cmdArgs []string) {
 	if err != nil {
 		panic(fmt.Sprint("notify-send ", err))
 	}
+}
+
+//GetCurrentUser ; retourne l'utilisateur connecté
+func GetCurrentUser() (string, error) {
+	var currentUser string
+	user, err := user.Current()
+	if err == nil {
+		currentUser = user.Username // jluc20mx
+	}
+	return currentUser, err
 }

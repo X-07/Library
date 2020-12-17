@@ -1,4 +1,4 @@
-package tsFunction
+package tsfunction
 
 import (
 	"encoding/json"
@@ -10,14 +10,15 @@ import (
 	"time"
 )
 
-const myRep = "/home/jluc2004x/.Script_GO"
-
-var TraceLog *bool     //trace dans le fichier log
+//TraceLog :
+var TraceLog *bool //trace dans le fichier log
+//TraceConsole :
 var TraceConsole *bool //trace sur la console
-var FicLog *string     //fichier log
+//FicLog :
+var FicLog *string //fichier log
 var fileLog *os.File
 
-//Teste si un fichier existe
+//FileExists : Teste si un fichier existe
 func FileExists(fileName string) bool {
 	_, err := os.Stat(fileName)
 	if err == nil {
@@ -31,7 +32,7 @@ func FileExists(fileName string) bool {
 	}
 }
 
-//Creation du dossier "dirName" s'il n'existe pas
+//CreateDirIfNotExists : Creation du dossier "dirName" s'il n'existe pas
 func CreateDirIfNotExists(dirName string) error {
 	var err error = nil
 	if !FileExists(dirName) {
@@ -40,7 +41,7 @@ func CreateDirIfNotExists(dirName string) error {
 	return err
 }
 
-//Creation du fichier "fileName" s'il n'existe pas
+//CreateFileIfNotExists : Creation du fichier "fileName" s'il n'existe pas
 func CreateFileIfNotExists(fileName string) (bool, error) {
 	var err error = nil
 	var exist = true
@@ -51,7 +52,7 @@ func CreateFileIfNotExists(fileName string) (bool, error) {
 	return exist, err
 }
 
-//Creation du fichier log s'il n'existe pas, ouverture et ecriture d'un enrg "date et heure"
+//OpenLOG : Creation du fichier log s'il n'existe pas, ouverture et ecriture d'un enrg "date et heure"
 func OpenLOG(ficLog string) (*os.File, error) {
 	var err error = nil
 	_, err = CreateFileIfNotExists(ficLog)
@@ -64,7 +65,7 @@ func OpenLOG(ficLog string) (*os.File, error) {
 	return fileLog, err
 }
 
-//Creation du fichier 'fic' s'il n'existe pas, ouverture
+//OpenFileRW : Creation du fichier 'fic' s'il n'existe pas, ouverture
 func OpenFileRW(fic string) (*os.File, error) {
 	var err error = nil
 	_, err = CreateFileIfNotExists(fic)
@@ -74,7 +75,7 @@ func OpenFileRW(fic string) (*os.File, error) {
 	return fileLog, err
 }
 
-//Creation du fichier 'fic' s'il n'existe pas, ouverture
+//OpenNewFileRW : Creation du fichier 'fic' s'il n'existe pas, ouverture
 func OpenNewFileRW(fic string) (*os.File, error) {
 	var err error = nil
 	if FileExists(fic) {
@@ -89,8 +90,8 @@ func OpenNewFileRW(fic string) (*os.File, error) {
 	return fileLog, err
 }
 
-//Écriture dans un fichier de données "struct" au format json
-func WriteJsonFile(filename string, data interface{}) error {
+//WriteJSONFile : Écriture dans un fichier de données "struct" au format json
+func WriteJSONFile(filename string, data interface{}) error {
 	fileContent, err := json.Marshal(data)
 	if err == nil {
 		err = ioutil.WriteFile(filename, fileContent, 0777)
@@ -98,16 +99,16 @@ func WriteJsonFile(filename string, data interface{}) error {
 	return err
 }
 
-//Lecture dans un fichier au format json et restitution en "struct"
-func ReadJsonFile(filename string, data interface{}) error {
+//ReadJSONFile : Lecture dans un fichier au format json et restitution en "struct"
+func ReadJSONFile(filename string, data interface{}) error {
 	fileData, err := ioutil.ReadFile(filename)
 	if err == nil {
-		err = json.Unmarshal(fileData, &data) //DECODAGE
+		err = json.Unmarshal(fileData, &data) //DÉCODAGE
 	}
 	return err
 }
 
-//Ajoute une ligne en fin de fichier tout en supprimant la première
+//PopLine : Ajoute une ligne en fin de fichier tout en supprimant la première
 func PopLine(filename string, val string) error {
 	input, err := ioutil.ReadFile(filename)
 	if err == nil {
@@ -120,34 +121,39 @@ func PopLine(filename string, val string) error {
 	return err
 }
 
-// récupère le répertoire de l'application
+//GetAppPath : Récupère le répertoire de l'application
 func GetAppPath() (string, error) {
 	appPath, err := os.Executable()
 	if err == nil {
-		appPath = filepath.Dir(appPath)
-		PrintConsole("appPath - os.Executable()           : " + appPath)
-
-		appPath, err = filepath.EvalSymlinks(appPath)
+		username, err := GetCurrentUser()
 		if err == nil {
-			PrintConsole("appPath - filepath.EvalSymlinks(...): " + appPath)
+			myRep := "/home/" + username + "/.Script_GO"
 
-			parts := strings.Split(appPath, string(os.PathSeparator))
-			PrintConsole(parts)
-			PrintConsole(filepath.Join(parts...))
-			if parts[1] == "tmp" && strings.Contains(parts[2], "go-build") {
-				PrintConsole("Session de DEV.")
-				appPath = myRep
-			}
-			if parts[len(parts)-1] == "__debug_bin" {
-				PrintConsole("Session de DEBUG")
-				appPath = myRep
+			appPath = filepath.Dir(appPath)
+			PrintConsole("appPath - os.Executable()           : " + appPath)
+
+			appPath, err = filepath.EvalSymlinks(appPath)
+			if err == nil {
+				PrintConsole("appPath - filepath.EvalSymlinks(...): " + appPath)
+
+				parts := strings.Split(appPath, string(os.PathSeparator))
+				PrintConsole(parts)
+				PrintConsole(filepath.Join(parts...))
+				if parts[1] == "tmp" && strings.Contains(parts[2], "go-build") {
+					PrintConsole("Session de DEV.")
+					appPath = myRep
+				}
+				if parts[len(parts)-1] == "__debug_bin" {
+					PrintConsole("Session de DEBUG")
+					appPath = myRep
+				}
 			}
 		}
 	}
 	return appPath, err
 }
 
-// ReadFileForValue(...) parcourt un fichier 'fileName' ligne à ligne à la recherche du mot clé 'cleVal' et retourne l'enregistrement le contenant
+//ReadFileForValue : Parcourt un fichier 'fileName' ligne à ligne à la recherche du mot clé 'cleVal' et retourne l'enregistrement le contenant
 func ReadFileForValue(fileName string, cleVal string) (string, error) {
 	var enrg string
 	input, err := ioutil.ReadFile(fileName)
@@ -169,7 +175,7 @@ func ReadFileForValue(fileName string, cleVal string) (string, error) {
 	return enrg, err
 }
 
-// ReadFileInTab(...) lire un fichier 'fileName' dans un tableau
+//ReadFileInTab : lire un fichier 'fileName' dans un tableau
 func ReadFileInTab(fileName string, cleVal string) ([]string, error) {
 	var enrgs []string
 	input, err := ioutil.ReadFile(fileName)
@@ -184,40 +190,40 @@ func ReadFileInTab(fileName string, cleVal string) ([]string, error) {
 	return enrgs, err
 }
 
-// Écriture sur le fichier log
+//PrintLog : Écriture sur le fichier log
 func PrintLog(message string) {
 	if *TraceLog {
 		fileLog.WriteString(message)
 	}
 }
 
-// Écriture sur la console
+//PrintConsole : Écriture sur la console
 func PrintConsole(message ...interface{}) {
 	if *TraceConsole {
 		fmt.Println(message...)
 	}
 }
 
-// Trace l'info
+//Trace : Trace l'info
 func Trace(message ...interface{}) {
 	PrintLog(fmt.Sprintln(message...))
 	PrintConsole(message...)
 }
 
-// Écriture sur la console
+//PrintConsole : Écriture sur la console
 //func PrintConsole(message string) {
 //	if *TraceConsole {
 //		fmt.Println(message)
 //	}
 //}
 
-// Trace l'info
+//Trace : Trace l'info
 //func Trace(message string) {
 //	PrintLog(message + "\n")
 //	PrintConsole(message)
 //}
 
-// Écriture sur la console
+//FmtConsole : Écriture sur la console
 func FmtConsole(a ...interface{}) {
 	if *TraceConsole {
 		fmt.Println(a...)

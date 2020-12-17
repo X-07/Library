@@ -1,4 +1,4 @@
-package tsFunction
+package tsfunction
 
 import (
 	"strconv"
@@ -139,8 +139,8 @@ func SliceStringUniq(s []string) []string {
 	return s
 }
 
-// MinimizeString retourne un s sous la forme xxx....xxx de la longueur len
-func MinimizeString(s string, newLen int) string {
+// MinimiseString retourne un s sous la forme xxx....xxx de la longueur len
+func MinimiseString(s string, newLen int) string {
 	var deb, fin int
 	if newLen < 11 {
 		newLen = 10
