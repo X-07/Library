@@ -228,14 +228,14 @@ type MediaInfoXML struct {
 
 // MediaInfo : structure MediaInfo (MediaInfo)
 type MediaInfo struct {
-	General MediaInfoGeneral
-	Video   []MediaInfoVideo
-	Audio   []MediaInfoAudio
-	Text    []MediaInfoText
+	General mediaInfoGeneral
+	Video   []mediaInfoVideo
+	Audio   []mediaInfoAudio
+	Text    []mediaInfoText
 }
 
-// MediaInfoGeneral : structure Générale (General_struct)
-type MediaInfoGeneral struct {
+// mediaInfoGeneral : structure Générale (General_struct)
+type mediaInfoGeneral struct {
 	Conteneur       string  // mkv
 	Format          string  // Matroska
 	FormatVersion   string  // 4
@@ -247,12 +247,12 @@ type MediaInfoGeneral struct {
 	XDuration       string  // 5315 ( < 5314.940 s)
 	XDurationAff    string  // 89
 	XOverallBitRate string  // 3048 ( < 3048426 bps)
-	AudioMultiPiste MediaInfoMultiPiste
-	TextMultiPiste  MediaInfoMultiPiste
+	AudioMultiPiste mediaInfoMultiPiste
+	TextMultiPiste  mediaInfoMultiPiste
 }
 
-// MediaInfoVideo : structure Vidéo (Video_struct)
-type MediaInfoVideo struct {
+// mediaInfoVideo : structure Vidéo (Video_struct)
+type mediaInfoVideo struct {
 	Format        string // AVC
 	FormatProfile string // High
 	FormatLevel   string // 4.1
@@ -275,8 +275,8 @@ type MediaInfoVideo struct {
 	XBitDepth     string // 8 ( < 8 bits)
 }
 
-// MediaInfoAudio : structure Audio (Audio_struct)
-type MediaInfoAudio struct {
+// mediaInfoAudio : structure Audio (Audio_struct)
+type mediaInfoAudio struct {
 	Format           string // AC-3
 	CodecID          string // A_AC3
 	CodecA           string
@@ -286,7 +286,7 @@ type MediaInfoAudio struct {
 	BitRate          int64  // 448 ( < 448 Kbps)
 	Channel          int64  // 6 ( < 6 channels)
 	ChannelPositions string // Front: L C R, Side: L R, LFE
-	ChannelDetail    MediaInfoChannelDetail
+	ChannelDetail    mediaInfoChannelDetail
 	ChannelAff       string  // 6ch: Surround
 	SamplingRate     float64 // 48.0 ( < 48.0 KHz)
 	BitDepth         int64   // 16 ( < 16 bits)
@@ -300,8 +300,8 @@ type MediaInfoAudio struct {
 	XBitDepth        string  // 16 ( < 16 bits)
 }
 
-// MediaInfoChannelDetail : structure Channel (ChannelDetail_struct)
-type MediaInfoChannelDetail struct {
+// mediaInfoChannelDetail : structure Channel (ChannelDetail_struct)
+type mediaInfoChannelDetail struct {
 	FrontL bool
 	FrontC bool
 	FrontR bool
@@ -310,15 +310,15 @@ type MediaInfoChannelDetail struct {
 	Sub    bool
 }
 
-// MediaInfoText : structure sous-titre (Text_struct)
-type MediaInfoText struct {
+// mediaInfoText : structure sous-titre (Text_struct)
+type mediaInfoText struct {
 	Format   string // UTF-8
 	CodecID  string // S_TEXT/UTF8
 	Language string // fr
 }
 
-// MediaInfoMultiPiste : structure sous-titre (MultiPiste_struct)
-type MediaInfoMultiPiste struct {
+// mediaInfoMultiPiste : structure sous-titre (MultiPiste_struct)
+type mediaInfoMultiPiste struct {
 	Format   string // UTF-8 / UTF-8
 	Language string // en / fr
 	NoFrench bool
@@ -349,7 +349,7 @@ func IsMediaFile(ext string) bool {
 	return result
 }
 
-// GetMediaInfoData : récupère les infos du média dans mediainfoXML1404 (données brutes)
+// GetMediaInfoData : récupère les infos du média dans MediaInfoXML1404 (données brutes)
 func GetMediaInfoData(fileName string) MediaInfoXML {
 	var mediainfoCmd string
 	mediainfoCmd, err := exec.LookPath("mediainfo")
@@ -380,7 +380,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 	for _, track := range result.Media.Track {
 		switch track.Type {
 		case "General":
-			var general MediaInfoGeneral
+			var general mediaInfoGeneral
 			general.Format = track.Format
 			general.FormatVersion = track.FormatVersion
 			general.FileSize, general.XFileSize = extractFileSize(track.FileSize)
@@ -389,7 +389,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate, track.NominalBitRate)
 			mediaInfo.General = general
 		case "Video":
-			var video MediaInfoVideo
+			var video mediaInfoVideo
 			video.Format = track.Format
 			video.FormatProfile = track.FormatProfile
 			video.FormatLevel = track.FormatLevel
@@ -414,7 +414,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			video.Language = track.Language
 			mediaInfo.Video = append(mediaInfo.Video, video)
 		case "Audio":
-			var audio MediaInfoAudio
+			var audio mediaInfoAudio
 			audio.Format = track.Format
 			audio.CodecID = track.CodecID
 			audio.CodecA = getCodeCodecAudio(audio.Format, audio.CodecID)
@@ -432,7 +432,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			audio.Language = track.Language
 			mediaInfo.Audio = append(mediaInfo.Audio, audio)
 		case "Text":
-			var text MediaInfoText
+			var text mediaInfoText
 			text.Format = track.Format
 			text.CodecID = track.CodecID
 			text.Language = track.Language
@@ -470,7 +470,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
 
 	if len(mediaInfo.Video) == 0 {
-		var video MediaInfoVideo
+		var video mediaInfoVideo
 		video.Format = "?"
 		video.FormatProfile = "?"
 		video.CodecID = "?"
@@ -486,7 +486,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 		mediaInfo.Video = append(mediaInfo.Video, video)
 	}
 	if len(mediaInfo.Audio) == 0 {
-		var audio MediaInfoAudio
+		var audio mediaInfoAudio
 		audio.Format = "?"
 		audio.CodecID = "?"
 		audio.CodecA = "?"
@@ -508,8 +508,9 @@ func GetMediaInfo(fileName string) MediaInfo {
 	return mediaInfo
 }
 
-// extractFileSize return size in GiB (2025275547 (B) --> 1.89 (GiB))
+// extractFileSize return size in GiB (2025275547 (B) --> 1.9 (GiB))
 func extractFileSize(size string) (float64, string) {
+	resultStr := ""
 	if size == "" {
 		return 0.00, "?"
 	}
@@ -518,8 +519,14 @@ func extractFileSize(size string) (float64, string) {
 		return 0, "-X-"
 	}
 	result /= 1024 * 1024 * 1024
+
 	result = math.RoundToEven(result*100) / 100
-	return result, strconv.FormatFloat(result, 'f', 2, 64)
+	if result < 0.1 {
+		resultStr = fmt.Sprintf("%.2f", result)
+	} else {
+		resultStr = fmt.Sprintf("%.1f", result)
+	}
+	return result, resultStr
 }
 
 // extractSize return size in pixel (1920 pixels --> 1920)
@@ -609,8 +616,8 @@ func extractChannel(channel string) (int64, string) {
 }
 
 // getChannelDetail // Front: L C R, Side: L R, LFE
-func getChannelDetail(channelPositions string) MediaInfoChannelDetail {
-	var channelDetail MediaInfoChannelDetail
+func getChannelDetail(channelPositions string) mediaInfoChannelDetail {
+	var channelDetail mediaInfoChannelDetail
 	if channelPositions != "" {
 		lines := strings.Split(channelPositions, ",")
 		for _, val := range lines {
