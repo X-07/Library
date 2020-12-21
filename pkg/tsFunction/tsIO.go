@@ -52,17 +52,32 @@ func CreateFileIfNotExists(fileName string) (bool, error) {
 	return exist, err
 }
 
-//OpenLOG : Creation du fichier log s'il n'existe pas, ouverture et ecriture d'un enrg "date et heure"
-func OpenLOG(ficLog string) (*os.File, error) {
-	var err error = nil
-	_, err = CreateFileIfNotExists(ficLog)
-	if err == nil {
-		fileLog, err = os.OpenFile(ficLog, os.O_APPEND|os.O_WRONLY, 0777)
+//OpenLOG : Creation du fichier log s'il n'existe pas, ouverture et écriture d'un enrg "date et heure"
+func OpenLOG(ficLog string) *os.File {
+	if *TraceLog {
+		var err error = nil
+		_, err = CreateFileIfNotExists(ficLog)
 		if err == nil {
-			fileLog.WriteString(fmt.Sprint(time.Now()) + "\n")
+			fileLog, err = os.OpenFile(ficLog, os.O_APPEND|os.O_WRONLY, 0777)
+			if err == nil {
+				fileLog.WriteString(fmt.Sprint(time.Now()) + "\n")
+			} else {
+				*TraceLog = false
+				fileLog = nil
+			}
+		} else {
+			*TraceLog = false
+			fileLog = nil
 		}
 	}
-	return fileLog, err
+	return fileLog
+}
+
+//CloseLog : Fermeture du fichier log s'il a été ouvert
+func CloseLog(fileLog *os.File) {
+	if *TraceLog {
+		fileLog.Close()
+	}
 }
 
 //OpenFileRW : Creation du fichier 'fic' s'il n'existe pas, ouverture
@@ -121,33 +136,36 @@ func PopLine(filename string, val string) error {
 	return err
 }
 
+//GetAppPathDev : Récupère le répertoire de l'application pour une execution en DEV/DEBUG
+func GetAppPathDev(myRep string) (string, error) {
+	//	myRep := "/home/" + username + "/.Script_GO"
+	appPath, err := GetAppPath()
+	if err == nil {
+		parts := strings.Split(appPath, string(os.PathSeparator))
+		Trace(parts)
+		Trace(filepath.Join(parts...))
+		if parts[1] == "tmp" && strings.Contains(parts[2], "go-build") {
+			Trace("Session de DEV.")
+			appPath = myRep
+		}
+		if parts[len(parts)-1] == "__debug_bin" {
+			Trace("Session de DEBUG")
+			appPath = myRep
+		}
+	}
+	return appPath, err
+}
+
 //GetAppPath : Récupère le répertoire de l'application
 func GetAppPath() (string, error) {
 	appPath, err := os.Executable()
 	if err == nil {
-		username, err := GetCurrentUser()
+		appPath = filepath.Dir(appPath)
+		Trace("appPath - os.Executable()           : " + appPath)
+
+		appPath, err = filepath.EvalSymlinks(appPath)
 		if err == nil {
-			myRep := "/home/" + username + "/.Script_GO"
-
-			appPath = filepath.Dir(appPath)
-			PrintConsole("appPath - os.Executable()           : " + appPath)
-
-			appPath, err = filepath.EvalSymlinks(appPath)
-			if err == nil {
-				PrintConsole("appPath - filepath.EvalSymlinks(...): " + appPath)
-
-				parts := strings.Split(appPath, string(os.PathSeparator))
-				PrintConsole(parts)
-				PrintConsole(filepath.Join(parts...))
-				if parts[1] == "tmp" && strings.Contains(parts[2], "go-build") {
-					PrintConsole("Session de DEV.")
-					appPath = myRep
-				}
-				if parts[len(parts)-1] == "__debug_bin" {
-					PrintConsole("Session de DEBUG")
-					appPath = myRep
-				}
-			}
+			Trace("appPath - filepath.EvalSymlinks(...): " + appPath)
 		}
 	}
 	return appPath, err
