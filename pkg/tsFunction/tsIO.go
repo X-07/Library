@@ -210,14 +210,14 @@ func ReadFileInTab(fileName string, cleVal string) ([]string, error) {
 
 //PrintLog : Écriture sur le fichier log
 func PrintLog(message string) {
-	if *TraceLog {
+	if TraceLog != nil && *TraceLog {
 		fileLog.WriteString(message)
 	}
 }
 
 //PrintConsole : Écriture sur la console
 func PrintConsole(message ...interface{}) {
-	if *TraceConsole {
+	if TraceConsole != nil && *TraceConsole {
 		fmt.Println(message...)
 	}
 }
@@ -243,7 +243,7 @@ func Trace(message ...interface{}) {
 
 //FmtConsole : Écriture sur la console
 func FmtConsole(a ...interface{}) {
-	if *TraceConsole {
+	if TraceConsole != nil && *TraceConsole {
 		fmt.Println(a...)
 	}
 }
