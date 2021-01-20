@@ -266,6 +266,7 @@ type mediaInfoVideo struct {
 	FrameRateMode string // Constant/Variable ( < CFR)
 	FrameRate     string // 23.976 ( < 23.976 fps)
 	BitDepth      int64  // 8 ( < 8 bits)
+	ScanType      string // Progressive
 	Language      string // en
 	XDuration     string // 5315
 	XDurationAff  string // 89
@@ -411,6 +412,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 				video.FrameRate = transcodeVideoFrameRate(extractFrameRate(track.OverallBitRate))
 			}
 			video.BitDepth, video.XBitDepth = extractBitDepth(track.BitDepth)
+			video.ScanType = track.ScanType
 			video.Language = track.Language
 			mediaInfo.Video = append(mediaInfo.Video, video)
 		case "Audio":
