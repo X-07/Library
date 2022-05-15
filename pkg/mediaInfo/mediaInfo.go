@@ -448,7 +448,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			format = append(format, audio.Format)
 			lang = append(lang, audio.Language)
 			if audio.Language != "fr" {
-				mediaInfo.General.AudioMultiPiste.NoFrench = false
+				mediaInfo.General.AudioMultiPiste.NoFrench = true
 			}
 		}
 		mediaInfo.General.AudioMultiPiste.Format = strings.Join(format, " / ")
@@ -462,7 +462,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			format = append(format, text.Format)
 			lang = append(lang, text.Language)
 			if text.Language != "fr" {
-				mediaInfo.General.TextMultiPiste.NoFrench = false
+				mediaInfo.General.TextMultiPiste.NoFrench = true
 			}
 		}
 		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
