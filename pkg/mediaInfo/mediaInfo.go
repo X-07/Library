@@ -27,7 +27,7 @@ const channel5 = "5ch: Surround"
 const channel6 = "6ch: Surround"
 const channel8 = "8ch: Surround +"
 
-// liste des extentions contenant des médias
+// liste des extensions contenant des médias
 var containers = map[string]bool{
 	".mkv":  true,
 	".mka":  true,
