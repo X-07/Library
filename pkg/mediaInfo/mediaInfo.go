@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	tsIO "tsFunction"
+	tsIO "github.com/X-07/Library/pkg/tsFunction"
 )
 
 const version = 0.5
