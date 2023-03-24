@@ -284,7 +284,7 @@ func CallNotifySend(cmdArgs []string) {
 	}
 }
 
-//GetCurrentUser ; retourne l'utilisateur connecté
+// GetCurrentUser ; retourne l'utilisateur connecté
 func GetCurrentUser() (string, error) {
 	var currentUser string
 	user, err := user.Current()

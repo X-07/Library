@@ -167,6 +167,7 @@ type MediaInfoXML struct {
 			Duration                 string `xml:"Duration"`
 			OverallBitRate           string `xml:"OverallBitRate"`
 			NominalBitRate           string `xml:"NominalBitRate"`
+			BitRateNominal           string `xml:"BitRate_Nominal"`
 			FrameRate                string `xml:"FrameRate"`
 			FrameCount               string `xml:"FrameCount"`
 			StreamSize               string `xml:"StreamSize"`
@@ -387,7 +388,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			general.FileSize, general.XFileSize = extractFileSize(track.FileSize)
 			general.Duration, general.XDuration = extractDuration(track.Duration)
 			general.DurationAff, general.XDurationAff = extractDurationMN(general.Duration)
-			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate, track.NominalBitRate)
+			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate, track.NominalBitRate, track.BitRateNominal)
 			mediaInfo.General = general
 		case "Video":
 			var video mediaInfoVideo
@@ -398,7 +399,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.FormatLevel, video.CodecID)
 			video.Duration, video.XDuration = extractDuration(track.Duration)
 			video.DurationAff, video.XDurationAff = extractDurationMN(video.Duration)
-			video.BitRate, video.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate)
+			video.BitRate, video.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate, track.BitRateNominal)
 			video.Width, video.XWidth = extractSize(track.Width)
 			video.Height, video.XHeight = extractSize(track.Height)
 			if track.FrameRateMode == "CFR" {
@@ -423,7 +424,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			audio.Duration, audio.XDuration = extractDuration(track.Duration)
 			audio.DurationAff, audio.XDurationAff = extractDurationMN(audio.Duration)
 			audio.BitRateMode = track.BitRateMode
-			audio.BitRate, audio.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate)
+			audio.BitRate, audio.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate, track.BitRateNominal)
 			audio.Channel, audio.XChannel = extractChannel(track.Channels)
 			audio.ChannelPositions = track.ChannelPositions
 			audio.ChannelDetail = getChannelDetail(track.ChannelPositions)
@@ -566,12 +567,15 @@ func extractDurationMN(duration int64) (int64, string) {
 }
 
 // extractBitRate return bitRate en Kbps (3048426 (bps) --> 3048 (Kbps))
-func extractBitRate(bitRate string, nominalBitRate string) (int64, string) {
-	if bitRate == "" && nominalBitRate == "" {
+func extractBitRate(bitRate string, nominalBitRate, bitRateNominal string) (int64, string) {
+	if bitRate == "" && nominalBitRate == "" && bitRateNominal == "" {
 		return 0, "?"
 	}
 	if bitRate == "" {
 		bitRate = nominalBitRate
+		if bitRate == "" {
+			bitRate = bitRateNominal
+		}
 	}
 	result, err := strconv.ParseInt(bitRate, 10, 64)
 	if err != nil {
@@ -654,7 +658,7 @@ func getChannelDetail(channelPositions string) mediaInfoChannelDetail {
 	return channelDetail
 }
 
-//### getChannelAff - transcode les canaux audio pour faciliter la lecture
+// ### getChannelAff - transcode les canaux audio pour faciliter la lecture
 func getChannelAff(channel int64) string {
 	var retour string
 	switch channel {
@@ -695,11 +699,12 @@ func extractSamplingRate(rate string) (float64, string) {
 	return result, resultX
 }
 
-//### getCodecVideo - transcode le codec vidéo pour faciliter la lecture
-// 		format        : 'AVC'
-// 		formatProfile : 'High'
-// 		formatLevel   : '4.1'
-// 		codecID       : 'V_MPEG4/ISO/AVC'
+// ### getCodecVideo - transcode le codec vidéo pour faciliter la lecture
+//
+//	format        : 'AVC'
+//	formatProfile : 'High'
+//	formatLevel   : '4.1'
+//	codecID       : 'V_MPEG4/ISO/AVC'
 func getCodecVideo(format string, formatProfile string, formatLevel string, codecID string) string {
 	if format == "" && formatProfile == "" && formatLevel == "" && codecID == "" {
 		return "????"
@@ -820,7 +825,7 @@ func getCodeCodecAudio(format string, codecID string) string {
 // 	return codecA
 // }
 
-//### transcodeVideoFrameRate - transcode le framerate vidéo pour faciliter la lecture
+// ### transcodeVideoFrameRate - transcode le framerate vidéo pour faciliter la lecture
 func transcodeVideoFrameRate(frameRate float64) string {
 	result := "?"
 	if frameRate != 0 {
