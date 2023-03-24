@@ -581,7 +581,7 @@ func extractBitRate(bitRate string, nominalBitRate, bitRateNominal string) (int6
 	if err != nil {
 		return 0, "-X-"
 	}
-	result /= 1024
+	result /= 1000
 	return int64(result), strconv.FormatInt(int64(result), 10)
 }
 
