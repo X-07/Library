@@ -1,4 +1,4 @@
-module gotk3
+module github.com/X-07/Library
 
 go 1.20
 
