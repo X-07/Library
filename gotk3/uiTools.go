@@ -31,6 +31,21 @@ func CreatePopup(window *gtk.Window, border uint, position gtk.WindowPosition) *
 	return popup
 }
 
+func CreateCssProvider() *gtk.CssProvider {
+	provider, err := gtk.CssProviderNew()
+	ErrorCheckIHM("Unable to create CssProviderNew ", err)
+	screen, err := gdk.ScreenGetDefault()
+	ErrorCheckIHM("Unable to create ScreenGetDefault ", err)
+	gtk.AddProviderForScreen(screen, provider, 600)
+	return provider
+}
+
+func CreateHeaderBar() *gtk.HeaderBar {
+	header, err := gtk.HeaderBarNew()
+	ErrorCheckIHM("Unable to create HeaderBar ", err)
+	return header
+}
+
 func CreatePaned() *gtk.Paned {
 	panedWin, err := gtk.PanedNew(gtk.ORIENTATION_HORIZONTAL)
 	ErrorCheckIHM("Unable to create Paned ", err)
