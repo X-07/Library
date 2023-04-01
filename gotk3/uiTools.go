@@ -21,6 +21,14 @@ func CreateWindow() *gtk.Window {
 	return window
 }
 
+func CreateWindowPopup() *gtk.Window {
+	window, err := gtk.WindowNew(gtk.WINDOW_POPUP)
+	ErrorCheckIHM("Unable to create Window popup ", err)
+	window.SetModal(true)
+	window.SetPosition(gtk.WIN_POS_CENTER_ALWAYS)
+	return window
+}
+
 func CreatePopup(window *gtk.Window, border uint, position gtk.WindowPosition) *gtk.Window {
 	popup, err := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
 	ErrorCheckIHM("Unable to create Window ", err)
@@ -46,7 +54,13 @@ func CreateHeaderBar() *gtk.HeaderBar {
 	return header
 }
 
-func CreatePaned() *gtk.Paned {
+func CreateVPaned() *gtk.Paned {
+	panedWin, err := gtk.PanedNew(gtk.ORIENTATION_VERTICAL)
+	ErrorCheckIHM("Unable to create Paned ", err)
+	return panedWin
+}
+
+func CreateHPaned() *gtk.Paned {
 	panedWin, err := gtk.PanedNew(gtk.ORIENTATION_HORIZONTAL)
 	ErrorCheckIHM("Unable to create Paned ", err)
 	return panedWin
@@ -68,6 +82,26 @@ func CreateHBox(padding int) *gtk.Box {
 	box, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, padding)
 	ErrorCheckIHM("Unable to create hBox ", err)
 	return box
+}
+
+func CreateVSeparator() *gtk.Separator {
+	separator, err := gtk.SeparatorNew(gtk.ORIENTATION_VERTICAL)
+	ErrorCheckIHM("Unable to create Separator ", err)
+	return separator
+}
+
+func CreateHSeparator() *gtk.Separator {
+	separator, err := gtk.SeparatorNew(gtk.ORIENTATION_HORIZONTAL)
+	ErrorCheckIHM("Unable to create Separator ", err)
+	return separator
+}
+
+func CreateTitre(titre string) *gtk.Label {
+	labelTitre, err := gtk.LabelNew("")
+	ErrorCheckIHM("Unable to create Label ", err)
+	labelTitre.SetMarkup("<span font_desc=\"Times New Roman 14\"><span weight=\"Bold\">" + titre + "</span></span>\n")
+	labelTitre.SetJustify(gtk.JUSTIFY_CENTER)
+	return labelTitre
 }
 
 func CreateCalendar() *gtk.Calendar {
@@ -213,6 +247,15 @@ func CreateCellRendererPixbuf() *gtk.CellRendererPixbuf {
 	return cellRenderer
 }
 
+func CreateCellRendererToggle() *gtk.CellRendererToggle {
+	// In this column we want to show a checkbox
+	cellRenderer, err := gtk.CellRendererToggleNew()
+	ErrorCheckIHM("Unable to create CellRendererToggle ", err)
+	cellRenderer.SetActivatable(true)
+	cellRenderer.SetActive(true)
+	return cellRenderer
+}
+
 func CreateTreeViewColumnNewWithAttribute(title string, cellRenderer gtk.ICellRenderer, attribute string, idColumn int) *gtk.TreeViewColumn {
 	column, err := gtk.TreeViewColumnNewWithAttribute(title, cellRenderer, attribute, idColumn)
 	ErrorCheckIHM("Unable to create TreeViewColumn ", err)
@@ -225,6 +268,11 @@ func CreateTextColumn(title string, id int) *gtk.TreeViewColumn {
 
 func CreateImageColumn(title string, id int) *gtk.TreeViewColumn {
 	return CreateTreeViewColumnNewWithAttribute(title, CreateCellRendererPixbuf(), "pixbuf", id)
+}
+
+func CreateToggleColumn(title string, id int) (*gtk.TreeViewColumn, *gtk.CellRendererToggle) {
+	cellRenderer := CreateCellRendererToggle()
+	return CreateTreeViewColumnNewWithAttribute(title, cellRenderer, "active", id), cellRenderer
 }
 
 func CreateProgressBar() *gtk.ProgressBar {
@@ -510,6 +558,12 @@ func GetComboBoxTextList(comboBox *gtk.ComboBoxText) []string {
 	return result
 }
 
+func GetStyleContext(entry *gtk.Entry) *gtk.StyleContext {
+	styleContext, err := entry.GetStyleContext()
+	ErrorCheckIHM("Unable to GetStyleContext from Entry ", err)
+	return styleContext
+}
+
 // =================
 func GetModelList(iModel gtk.ITreeModel) []string {
 	var result []string
@@ -527,7 +581,7 @@ func GetModelList(iModel gtk.ITreeModel) []string {
 func SelectRow(listStore *gtk.ListStore, treeSelection *gtk.TreeSelection, ident int64, idCol int) {
 	ok := false
 	listStore.ForEach(func(model *gtk.TreeModel, path *gtk.TreePath, iter *gtk.TreeIter) bool {
-		id := GetIntValue(model, iter, idCol)
+		id := GetInt64Value(model, iter, idCol)
 
 		if id == ident {
 			treeSelection.SelectIter(iter)
@@ -558,12 +612,40 @@ func GetColumnButton(treeViewColumn *gtk.TreeViewColumn) *gtk.Button {
 }
 
 // =================
-func GetIntValue(model *gtk.TreeModel, iter *gtk.TreeIter, column int) int64 {
+func GetIntValue(model *gtk.TreeModel, iter *gtk.TreeIter, column int) int {
+	value, err := model.GetValue(iter, column) // int64
+	ErrorCheckIHM("Unable to call GetValue from TreeModel ", err)
+	typ, err := value.GoValue()
+	ErrorCheckIHM("Unable to call GoValue from Value ", err)
+	return typ.(int)
+}
+func GetIntValueOrErr(model *gtk.TreeModel, iter *gtk.TreeIter, column int) (int, error) {
+	value, err := model.GetValue(iter, column) // int64
+	if err == nil {
+		typ, err := value.GoValue()
+		if err == nil {
+			return typ.(int), nil
+		}
+	}
+	return 0, err
+}
+
+func GetInt64Value(model *gtk.TreeModel, iter *gtk.TreeIter, column int) int64 {
 	value, err := model.GetValue(iter, column) // int64
 	ErrorCheckIHM("Unable to call GetValue from TreeModel ", err)
 	typ, err := value.GoValue()
 	ErrorCheckIHM("Unable to call GoValue from Value ", err)
 	return typ.(int64)
+}
+func GetInt64ValueOrErr(model *gtk.TreeModel, iter *gtk.TreeIter, column int) (int64, error) {
+	value, err := model.GetValue(iter, column) // int64
+	if err == nil {
+		typ, err := value.GoValue()
+		if err == nil {
+			return typ.(int64), nil
+		}
+	}
+	return 0, err
 }
 
 func GetBoolValue(model *gtk.TreeModel, iter *gtk.TreeIter, column int) bool {
@@ -573,6 +655,16 @@ func GetBoolValue(model *gtk.TreeModel, iter *gtk.TreeIter, column int) bool {
 	ErrorCheckIHM("Unable to call GoValue from Value ", err)
 	return typ.(bool)
 }
+func GetBoolValueOrErr(model *gtk.TreeModel, iter *gtk.TreeIter, column int) (bool, error) {
+	value, err := model.GetValue(iter, column) // int64
+	if err == nil {
+		typ, err := value.GoValue()
+		if err == nil {
+			return typ.(bool), nil
+		}
+	}
+	return false, err
+}
 
 func GetStringValue(model *gtk.TreeModel, iter *gtk.TreeIter, column int) string {
 	value, err := model.GetValue(iter, column) // string
@@ -581,8 +673,18 @@ func GetStringValue(model *gtk.TreeModel, iter *gtk.TreeIter, column int) string
 	ErrorCheckIHM("Unable to call GetString from Value ", err)
 	return text
 }
+func GetStringValueOrErr(model *gtk.TreeModel, iter *gtk.TreeIter, column int) (string, error) {
+	value, err := model.GetValue(iter, column) // string
+	if err == nil {
+		text, err := value.GetString()
+		if err == nil {
+			return text, nil
+		}
+	}
+	return "", err
+}
 
-func SetValue(store *gtk.TreeStore, iter *gtk.TreeIter, column int, value interface{}) {
+func SetTsValue(store *gtk.TreeStore, iter *gtk.TreeIter, column int, value interface{}) {
 	err := store.SetValue(iter, column, value)
 	ErrorCheckIHM("Unable to SetValue to TreeStore ", err)
 }
