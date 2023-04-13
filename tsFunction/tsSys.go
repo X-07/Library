@@ -1,9 +1,9 @@
-package tsfunction
+package tsFunction
 
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
@@ -62,7 +62,7 @@ type fileStruct struct {
 //   Wired Properties
 //     Carrier
 
-// GetConnexion : recherche du device de connexion ethernet (ex: eth0)
+// GetConnexion : recherche du device de connexion Ethernet (ex: eth0)
 func GetConnexion() string {
 	var connect string
 	// execution de la commande shell "nm-tool"
@@ -138,12 +138,12 @@ func ReadStatsUp(connect string) int64 {
 // GetDataCPU : recherche les infos du CPU
 func GetDataCPU(core string) fileStruct {
 	var file fileStruct
-	enrg, err := ReadFileForValue("/proc/stat", "cpu"+core)
+	enr, err := ReadFileForValue("/proc/stat", "cpu"+core)
 	if err != nil {
 		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 		panic(fmt.Sprint("tsSys - getDataCPU > ReadFileForValue: ", err))
 	}
-	mots := strings.Fields(enrg)
+	mots := strings.Fields(enr)
 	file.CpuN = mots[0]
 	var user, nice, system, idle, irq, softirq int64
 	user, err = strconv.ParseInt(mots[1], 10, 64)
@@ -197,7 +197,7 @@ func GetDataAllDisk() (float64, float64) {
 	hddAll := []string{}
 	listDisk, _ := filepath.Glob("/sys/block/sd*")
 	for _, device := range listDisk {
-		input, err := ioutil.ReadFile(device + "/size")
+		input, err := os.ReadFile(device + "/size")
 		if err != nil {
 			CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataAllDisk()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 			panic(fmt.Sprint("tsSys - getDataAllDisk > ReadFile: ", err))
@@ -213,7 +213,7 @@ func GetDataAllDisk() (float64, float64) {
 	//Récupérer la taille du secteur
 	sectorSize := []int64{}
 	for _, hdd := range hddAll {
-		sector, err := ioutil.ReadFile("/sys/block/" + hdd + "/queue/hw_sector_size")
+		sector, err := os.ReadFile("/sys/block/" + hdd + "/queue/hw_sector_size")
 		if err == nil {
 			var val int64
 			val, err = strconv.ParseInt(strings.Fields(string(sector))[0], 10, 64)
@@ -230,7 +230,7 @@ func GetDataAllDisk() (float64, float64) {
 
 	for idx, hdd := range hddAll {
 		var lec, ecr int64
-		input, err := ioutil.ReadFile("/sys/block/" + hdd + "/stat")
+		input, err := os.ReadFile("/sys/block/" + hdd + "/stat")
 		if err != nil {
 			CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataAllDisk()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
 			panic(fmt.Sprint("tsSys - getDataAllDisk > ReadFile: ", err))

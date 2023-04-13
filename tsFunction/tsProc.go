@@ -1,4 +1,4 @@
-package tsfunction
+package tsFunction
 
 import (
 	"strconv"
@@ -94,7 +94,7 @@ func MiseEnFormeBit(bps int64) string {
 	return xSpeed + unit
 }
 
-//MiseEnFormeGiga : function de mise en forme
+// MiseEnFormeGiga : function de mise en forme
 func MiseEnFormeGiga(val int64) string {
 	var xResult string
 	result := float64(val) / 1048576 //1Go
