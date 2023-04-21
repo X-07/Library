@@ -597,6 +597,12 @@ func GetBoxStyleContext(box *gtk.Box) *gtk.StyleContext {
 	return styleContext
 }
 
+func GetMenuItemStyleContext(menuItem *gtk.MenuItem) *gtk.StyleContext {
+	styleContext, err := menuItem.GetStyleContext()
+	ErrorCheckIHM("Unable to GetStyleContext from MenuItem ", err)
+	return styleContext
+}
+
 // =================
 func GetModelList(iModel gtk.ITreeModel) []string {
 	var result []string
