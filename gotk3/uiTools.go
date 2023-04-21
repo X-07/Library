@@ -30,8 +30,7 @@ func CreateWindowPopup() *gtk.Window {
 }
 
 func CreatePopup(window *gtk.Window, border uint, position gtk.WindowPosition) *gtk.Window {
-	popup, err := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-	ErrorCheckIHM("Unable to create Window ", err)
+	popup := CreateWindow()
 	popup.SetTransientFor(window)
 	popup.SetPosition(position)
 	popup.SetBorderWidth(border)
@@ -48,9 +47,13 @@ func CreateCssProvider() *gtk.CssProvider {
 	return provider
 }
 
-func CreateHeaderBar() *gtk.HeaderBar {
+func CreateHeaderBar(pgmName, subtitle string, pgmIcon *gdk.Pixbuf) *gtk.HeaderBar {
 	header, err := gtk.HeaderBarNew()
 	ErrorCheckIHM("Unable to create HeaderBar ", err)
+	header.SetShowCloseButton(true)
+	header.SetTitle("- " + pgmName + " -")
+	header.SetSubtitle(subtitle)
+	header.PackStart(CreateImageFromPixbuf(ResizeIconPixBuf(pgmIcon, 32, 32)))
 	return header
 }
 
@@ -178,6 +181,12 @@ func CreateMenuBar() *gtk.MenuBar {
 
 func CreateMenuItemWithLabel(titre string) *gtk.MenuItem {
 	menuItem, err := gtk.MenuItemNewWithLabel(titre)
+	ErrorCheckIHM("Unable to create MenuItem ", err)
+	return menuItem
+}
+
+func CreateMenuItemWithMnemonic(titre string) *gtk.MenuItem {
+	menuItem, err := gtk.MenuItemNewWithMnemonic(titre)
 	ErrorCheckIHM("Unable to create MenuItem ", err)
 	return menuItem
 }
@@ -558,9 +567,33 @@ func GetComboBoxTextList(comboBox *gtk.ComboBoxText) []string {
 	return result
 }
 
-func GetStyleContext(entry *gtk.Entry) *gtk.StyleContext {
+func GetEntryStyleContext(entry *gtk.Entry) *gtk.StyleContext {
 	styleContext, err := entry.GetStyleContext()
 	ErrorCheckIHM("Unable to GetStyleContext from Entry ", err)
+	return styleContext
+}
+
+func GetLabelStyleContext(label *gtk.Label) *gtk.StyleContext {
+	styleContext, err := label.GetStyleContext()
+	ErrorCheckIHM("Unable to GetStyleContext from Label ", err)
+	return styleContext
+}
+
+func GetButtonStyleContext(button *gtk.Button) *gtk.StyleContext {
+	styleContext, err := button.GetStyleContext()
+	ErrorCheckIHM("Unable to GetStyleContext from Button ", err)
+	return styleContext
+}
+
+func GetScrolledWindowStyleContext(scrolledWindow *gtk.ScrolledWindow) *gtk.StyleContext {
+	styleContext, err := scrolledWindow.GetStyleContext()
+	ErrorCheckIHM("Unable to GetStyleContext from ScrolledWindow ", err)
+	return styleContext
+}
+
+func GetBoxStyleContext(box *gtk.Box) *gtk.StyleContext {
+	styleContext, err := box.GetStyleContext()
+	ErrorCheckIHM("Unable to GetStyleContext from Box ", err)
 	return styleContext
 }
 
