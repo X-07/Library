@@ -559,6 +559,7 @@ func CreateEventBox() *gtk.EventBox {
 	return eventBox
 }
 
+// =================
 func GetComboBoxTextList(comboBox *gtk.ComboBoxText) []string {
 	iModel, err := comboBox.GetModel()
 	ErrorCheckIHM("Unable to create ComboBox.GetModel ", err)

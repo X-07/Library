@@ -1,4 +1,4 @@
-package mediainfo
+package tsMediaInfo
 
 // A lancer par la commande "go test -v *.go"		-v pour écrire sur la console avec t.Log
 

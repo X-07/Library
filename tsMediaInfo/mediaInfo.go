@@ -1,4 +1,4 @@
-package mediainfo
+package tsMediaInfo
 
 import (
 	"encoding/xml"
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	tsIO "github.com/X-07/Library/tsFunction"
+	tsIO "github.com/X-07/Library/tsUtils"
 )
 
 const version = 0.5

@@ -1,12 +1,17 @@
-package tsFunction
+package tsUtils
 
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
+
+	"github.com/X-07/Library/gotk3"
+	"github.com/gotk3/gotk3/glib"
 )
 
 // TraceLog :
@@ -31,6 +36,27 @@ func FileExists(fileName string) bool {
 	}
 }
 
+func Exists(filePath string) bool {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+func IsDirEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err // Either not empty or error, suits both cases
+}
+
 // CreateDirIfNotExists : Creation du dossier "dirName" s'il n'existe pas
 func CreateDirIfNotExists(dirName string) error {
 	var err error = nil
@@ -38,6 +64,19 @@ func CreateDirIfNotExists(dirName string) error {
 		err = os.Mkdir(dirName, 0777)
 	}
 	return err
+}
+
+// CreateDirAllIfNotExists : Creation du dossier "dir", ainsi que ses parents, s'il(s) n'existe(nt) pas
+func CreateDirAllIfNotExists(dir string, perm os.FileMode) error {
+	if Exists(dir) {
+		return nil
+	}
+
+	if err := os.MkdirAll(dir, perm); err != nil {
+		return fmt.Errorf("failed to create directory: '%s', error: '%s'", dir, err.Error())
+	}
+
+	return nil
 }
 
 // CreateFileIfNotExists : Creation du fichier "fileName" s'il n'existe pas
@@ -49,6 +88,23 @@ func CreateFileIfNotExists(fileName string) (bool, error) {
 		_, err = os.Create(fileName)
 	}
 	return exist, err
+}
+
+func CreateFile(fic string) *os.File {
+	var err error
+	if Exists(fic) {
+		err = os.Remove(fic)
+		if err != nil {
+			gotk3.ErrorCheckIHM("failed to delete file: '"+fic+"' ", err)
+		}
+	}
+
+	file, err := os.Create(fic)
+	if err != nil {
+		gotk3.ErrorCheckIHM("failed to create file: '"+fic+"' ", err)
+	}
+
+	return file
 }
 
 // OpenLOG : Creation du fichier log s'il n'existe pas, ouverture et écriture d'un enregistrement "date et heure"
@@ -245,4 +301,103 @@ func FmtConsole(a ...interface{}) {
 	if TraceConsole != nil && *TraceConsole {
 		fmt.Println(a...)
 	}
+}
+
+func CopyDirectory(scrDir, dest string) error {
+	if err := CreateDirAllIfNotExists(dest, 0755); err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(scrDir)
+	if err != nil {
+		return err
+	}
+
+	glib.IdleAdd(func() {
+		gotk3.ProgressBar.SetText("Copie des photos de la collection ...")
+	})
+	nbTotal := len(entries)
+	for idx, entry := range entries {
+		glib.IdleAdd(func() {
+			gotk3.ProgressBar.SetText("Copie des photos de la collection [N° " + ItoA(idx) + "]")
+			gotk3.ProgressBar.SetFraction(float64(idx) / float64(nbTotal))
+		})
+
+		sourcePath := filepath.Join(scrDir, entry.Name())
+		destPath := filepath.Join(dest, entry.Name())
+
+		fileInfo, err := os.Stat(sourcePath)
+		if err != nil {
+			return err
+		}
+
+		stat, ok := fileInfo.Sys().(*syscall.Stat_t)
+		if !ok {
+			return fmt.Errorf("failed to get raw syscall.Stat_t data for '%s'", sourcePath)
+		}
+
+		switch fileInfo.Mode() & os.ModeType {
+		case os.ModeDir:
+			if err := CreateDirAllIfNotExists(destPath, 0755); err != nil {
+				return err
+			}
+			if err := CopyDirectory(sourcePath, destPath); err != nil {
+				return err
+			}
+		case os.ModeSymlink:
+			if err := copySymLink(sourcePath, destPath); err != nil {
+				return err
+			}
+		default:
+			if err := copy(sourcePath, destPath); err != nil {
+				return err
+			}
+		}
+
+		if err := os.Lchown(destPath, int(stat.Uid), int(stat.Gid)); err != nil {
+			return err
+		}
+
+		fInfo, err := entry.Info()
+		if err != nil {
+			return err
+		}
+
+		isSymlink := fInfo.Mode()&os.ModeSymlink != 0
+		if !isSymlink {
+			if err := os.Chmod(destPath, fInfo.Mode()); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func copy(srcFile, dstFile string) error {
+	out, err := os.Create(dstFile)
+	if err != nil {
+		return err
+	}
+
+	defer out.Close()
+
+	in, err := os.Open(srcFile)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func copySymLink(source, dest string) error {
+	link, err := os.Readlink(source)
+	if err != nil {
+		return err
+	}
+	return os.Symlink(link, dest)
 }

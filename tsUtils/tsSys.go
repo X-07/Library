@@ -1,4 +1,4 @@
-package tsFunction
+package tsUtils
 
 import (
 	"bytes"
