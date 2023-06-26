@@ -313,13 +313,17 @@ func CopyDirectory(scrDir, dest string) error {
 	}
 
 	glib.IdleAdd(func() {
-		gotk3.ProgressBar.SetText("Copie des photos de la collection ...")
+		if gotk3.ProgressBar != nil {
+			gotk3.ProgressBar.SetText("Copie des photos de la collection ...")
+		}
 	})
 	nbTotal := len(entries)
 	for idx, entry := range entries {
 		glib.IdleAdd(func() {
-			gotk3.ProgressBar.SetText("Copie des photos de la collection [N° " + ItoA(idx) + "]")
-			gotk3.ProgressBar.SetFraction(float64(idx) / float64(nbTotal))
+			if gotk3.ProgressBar != nil {
+				gotk3.ProgressBar.SetText("Copie des photos de la collection [N° " + ItoA(idx) + "]")
+				gotk3.ProgressBar.SetFraction(float64(idx) / float64(nbTotal))
+			}
 		})
 
 		sourcePath := filepath.Join(scrDir, entry.Name())
