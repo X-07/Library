@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	progressBarPopup *gtk.Window
-	ProgressBar      *gtk.ProgressBar
+	progressBarPopup  *gtk.Window
+	ProgressBar       *gtk.ProgressBar
+	ProgressBarDetail *gtk.ProgressBar
 )
 
 func CreateWindow() *gtk.Window {
@@ -839,14 +840,23 @@ func MakeProgressBarPopup(win *gtk.Window, border uint, title string, position g
 	progressBarLine.PackStart(ProgressBar, true, true, 20)
 	ProgressBar.SetShowText(true)
 
+	progressBarLineDetail := CreateHBox(0)
+	progressBarMain.PackStart(progressBarLineDetail, false, false, 0)
+	progressBarLineDetail.SetMarginBottom(15)
+	ProgressBarDetail = CreateProgressBar()
+	progressBarLineDetail.PackStart(ProgressBarDetail, true, true, 20)
+	ProgressBarDetail.SetShowText(true)
+
 	progressBarPopup.Connect("destroy", func() {
 		// fmt.Println("progressBarPopup DESTROY")
 		progressBarPopup.Destroy()
 		ProgressBar = nil
+		ProgressBarDetail = nil
 		progressBarPopup = nil
 	})
 
 	progressBarPopup.ShowAll()
+	ProgressBarDetail.Hide()
 }
 
 func CloseProgressBarPopup() {
