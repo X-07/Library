@@ -139,6 +139,20 @@ func SliceStringUniq(s []string) []string {
 	return s
 }
 
+func AppendIfNotContains(tab *[]string, str string, max int) {
+	find := false
+	for _, elmt := range *tab {
+		if elmt == str {
+			find = true
+		}
+	}
+	if !find {
+		if max == -1 || len(*tab) < max+1 {
+			*tab = append(*tab, str)
+		}
+	}
+}
+
 // MinimiseString retourne un s sous la forme xxx....xxx de la longueur len
 func MinimiseString(s string, newLen int) string {
 	var deb, fin int

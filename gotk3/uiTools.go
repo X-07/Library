@@ -503,6 +503,10 @@ func CreateIconPixBuf(icon []byte) *gdk.Pixbuf {
 	return pixbuf
 }
 
+func CreateIconPixBufOrErr(icon []byte) (*gdk.Pixbuf, error) {
+	return gdk.PixbufNewFromBytesOnly(icon)
+}
+
 func CreateIconPixBufAnimation(imgPath string) *gdk.PixbufAnimation {
 	pixbufAnimation, err := gdk.PixbufAnimationNewFromFile(imgPath)
 	ErrorCheckIHM("Unable to create PixBufAnimation from file ", err)
