@@ -124,7 +124,11 @@ func ConvertDate(date string) string {
 		case "décembre":
 			month = "12"
 		}
-		result = dateElmt[0] + "/" + month + "/" + dateElmt[2]
+		day := dateElmt[0]
+		if len(day) == 1 {
+			day = "0" + day
+		}
+		result = day + "/" + month + "/" + dateElmt[2]
 	}
 	return result
 }
