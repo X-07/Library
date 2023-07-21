@@ -760,6 +760,23 @@ func ErrorCheckIHM(msg string, err error) {
 	}
 }
 
+func SendNotification(title, message string) {
+	appID := "fr.jlt.appNotification"
+	app, _ := gtk.ApplicationNew(appID, glib.APPLICATION_FLAGS_NONE)
+
+	//Shows an application as soon as the app starts
+	app.Connect("activate", func() {
+		notify := glib.NotificationNew(title)
+		if message != "" {
+			notify.SetBody(message)
+		}
+		notify.SetPriority(glib.NOTIFICATION_PRIORITY_HIGH)
+		app.SendNotification(appID, notify)
+	})
+
+	app.Run(nil)
+}
+
 // =================
 // #### CUSTOM #####
 // =================
