@@ -558,6 +558,13 @@ func CreateScrolledWindow() *gtk.ScrolledWindow {
 	return scrolledWindow
 }
 
+func CreateScrolledWindowWithPolicy(hScrollbarPolicy, vScrollbarPolicy gtk.PolicyType) *gtk.ScrolledWindow {
+	scrolledWindow, err := gtk.ScrolledWindowNew(nil, nil)
+	ErrorCheckIHM("Unable to create ScrolledWindow ", err)
+	scrolledWindow.SetPolicy(hScrollbarPolicy, vScrollbarPolicy)
+	return scrolledWindow
+}
+
 func CreateEventBox() *gtk.EventBox {
 	eventBox, err := gtk.EventBoxNew()
 	ErrorCheckIHM("Unable to create EventBox ", err)
