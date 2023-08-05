@@ -139,7 +139,8 @@ func SliceStringUniq(s []string) []string {
 	return s
 }
 
-func AppendIfNotContains(tab *[]string, str string, max int) {
+// AppendIfNotContains: retourne si le nouvel élément est présent dans la liste (ajouté ou déjà présent)
+func AppendIfNotContains(tab *[]string, str string, max int) bool {
 	find := false
 	for _, elmt := range *tab {
 		if elmt == str {
@@ -149,8 +150,12 @@ func AppendIfNotContains(tab *[]string, str string, max int) {
 	if !find {
 		if max == -1 || len(*tab) < max+1 {
 			*tab = append(*tab, str)
+			return true
+		} else {
+			return false
 		}
 	}
+	return true
 }
 
 // MinimiseString retourne un s sous la forme xxx....xxx de la longueur len
