@@ -32,10 +32,12 @@ func CreateWindowPopup() *gtk.Window {
 
 func CreatePopup(window *gtk.Window, border uint, position gtk.WindowPosition) *gtk.Window {
 	popup := CreateWindow()
-	popup.SetTransientFor(window)
 	popup.SetPosition(position)
 	popup.SetBorderWidth(border)
-	popup.SetModal(true)
+	if window != nil {
+		popup.SetTransientFor(window)
+		popup.SetModal(true)
+	}
 	return popup
 }
 
@@ -854,7 +856,7 @@ func ItoA(value int) string {
 // =================
 func MakeProgressBarPopup(win *gtk.Window, border uint, title string, position gtk.WindowPosition) {
 	progressBarPopup = CreatePopup(win, border, position)
-	progressBarPopup.SetDefaultSize(500, 100) // ($width, $height)
+	progressBarPopup.SetDefaultSize(640, 100) // ($width, $height)
 	progressBarPopup.SetTitle(title)
 
 	progressBarMain := CreateVBox(0)
