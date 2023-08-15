@@ -14,11 +14,11 @@ func GetFormat(width, height int) string {
 		return "HD" // 1280 x 720 or 1366 x 768
 	case width >= 1900 && height <= 1080:
 		return "FHD" // 1920 x 1080
-	case width == 1828 && height == 1332:
-		return "2K" // 1828 × 1332
-	case width == 3840 && height == 2160:
+	case width >= 2500 && height <= 1440:
+		return "2K" // 2560 x 1440
+	case width >= 3800 && height <= 2160:
 		return "4K" // 3840 x 2160
-	case width == 7680 && height == 4320:
+	case width >= 7600 && height <= 4320:
 		return "8K" // 7680 x 4320
 	default:
 		return "NA"
@@ -28,8 +28,14 @@ func GetFormat(width, height int) string {
 func GetEncQuality(format string, debitV int, otherPb *string, toReEncode *bool, replace *bool) string {
 	encQuality := ""
 	switch format {
+	case "NA":
+		encQuality = "NA"
 	case "HD":
 		switch {
+		case debitV == 0:
+			encQuality = "NA"
+		case debitV < 1300:
+			encQuality = "Bad"
 		case debitV < 2000:
 			encQuality = "Light"
 		case debitV < 3000:
@@ -41,6 +47,10 @@ func GetEncQuality(format string, debitV int, otherPb *string, toReEncode *bool,
 		}
 	case "FHD":
 		switch {
+		case debitV == 0:
+			encQuality = "NA"
+		case debitV < 2500:
+			encQuality = "Bad"
 		case debitV < 4000:
 			encQuality = "Light"
 		case debitV < 5000:
@@ -50,7 +60,7 @@ func GetEncQuality(format string, debitV int, otherPb *string, toReEncode *bool,
 			*otherPb = "Débit V."
 			*toReEncode = true
 		}
-	case "4K", "8K":
+	case "2K", "4K", "8K":
 		*otherPb = "Format"
 		*toReEncode = true
 	default:
