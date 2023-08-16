@@ -4,9 +4,9 @@ func GetFormat(width, height int) string {
 	switch {
 	case width == 0 && height == 0:
 		return ""
-	case height <= 288:
+	case width <= 352 && height <= 288:
 		return "VCD" // 352 x 288 or 352 x 240
-	case width < 640 || height < 380:
+	case width < 640 && height <= 576:
 		return "VHS" // 310 x 576 or 320 x 480
 	case width < 900 && height <= 576:
 		return "DVD" // 720 x 576 or 720 x 480
