@@ -275,7 +275,7 @@ func CreateTreeViewColumnNewWithAttribute(title string, cellRenderer gtk.ICellRe
 }
 
 func CreateMarkupColumn(title string, id int) *gtk.TreeViewColumn {
-	return CreateTreeViewColumnNewWithAttribute(title, CreateCellRendererText(), "Markup", id)
+	return CreateTreeViewColumnNewWithAttribute(title, CreateCellRendererText(), "markup", id)
 }
 
 func CreateTextColumn(title string, id int) *gtk.TreeViewColumn {
