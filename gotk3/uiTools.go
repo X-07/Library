@@ -578,20 +578,24 @@ func CreateEventBox() *gtk.EventBox {
 }
 
 // =================
-func SetComboBoxTextValue(comboBox *gtk.ComboBoxText, valueList []string, field string) {
+func SetComboBoxTextValueWithEntry(comboBox *gtk.ComboBoxText, value string) {
+	if !SetComboBoxText(comboBox, value) {
+		entry, err := comboBox.GetEntry()
+		ErrorCheckIHM("Unable to GetEntry from ComboBox (container) ", err)
+		entry.SetText(value)
+	}
+}
+
+func SetComboBoxText(comboBox *gtk.ComboBoxText, value string) bool {
 	ok := false
-	for idx, elmt := range valueList {
-		if elmt == field {
+	for idx, elmt := range GetComboBoxTextList(comboBox) {
+		if elmt == value {
 			comboBox.SetActive(idx)
 			ok = true
 			break
 		}
 	}
-	if !ok {
-		entry, err := comboBox.GetEntry()
-		ErrorCheckIHM("Unable to GetEntry from ComboBox (container) ", err)
-		entry.SetText(field)
-	}
+	return ok
 }
 
 // =================
