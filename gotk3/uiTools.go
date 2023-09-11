@@ -578,6 +578,23 @@ func CreateEventBox() *gtk.EventBox {
 }
 
 // =================
+func SetComboBoxTextValue(comboBox *gtk.ComboBoxText, valueList []string, field string) {
+	ok := false
+	for idx, elmt := range valueList {
+		if elmt == field {
+			comboBox.SetActive(idx)
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		entry, err := comboBox.GetEntry()
+		ErrorCheckIHM("Unable to GetEntry from ComboBox (container) ", err)
+		entry.SetText(field)
+	}
+}
+
+// =================
 func GetComboBoxTextList(comboBox *gtk.ComboBoxText) []string {
 	iModel, err := comboBox.GetModel()
 	ErrorCheckIHM("Unable to create ComboBox.GetModel ", err)
