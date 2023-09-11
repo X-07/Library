@@ -578,7 +578,7 @@ func CreateEventBox() *gtk.EventBox {
 }
 
 // =================
-func SetComboBoxTextValueWithEntry(comboBox *gtk.ComboBoxText, value string) {
+func SetComboBoxTextWithEntry(comboBox *gtk.ComboBoxText, value string) {
 	if !SetComboBoxText(comboBox, value) {
 		entry, err := comboBox.GetEntry()
 		ErrorCheckIHM("Unable to GetEntry from ComboBox (container) ", err)
