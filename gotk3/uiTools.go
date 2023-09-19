@@ -579,7 +579,7 @@ func CreateEventBox() *gtk.EventBox {
 
 // =================
 func SetComboBoxTextWithEntry(comboBox *gtk.ComboBoxText, value string) {
-	if !SetComboBoxText(comboBox, value) {
+	if comboBox != nil && !SetComboBoxText(comboBox, value) {
 		entry, err := comboBox.GetEntry()
 		ErrorCheckIHM("Unable to GetEntry from ComboBox (container) ", err)
 		entry.SetText(value)
@@ -588,11 +588,13 @@ func SetComboBoxTextWithEntry(comboBox *gtk.ComboBoxText, value string) {
 
 func SetComboBoxText(comboBox *gtk.ComboBoxText, value string) bool {
 	ok := false
-	for idx, elmt := range GetComboBoxTextList(comboBox) {
-		if elmt == value {
-			comboBox.SetActive(idx)
-			ok = true
-			break
+	if comboBox != nil {
+		for idx, elmt := range GetComboBoxTextList(comboBox) {
+			if elmt == value {
+				comboBox.SetActive(idx)
+				ok = true
+				break
+			}
 		}
 	}
 	return ok
