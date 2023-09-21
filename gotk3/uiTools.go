@@ -16,6 +16,8 @@ var (
 	ProgressBarDetail *gtk.ProgressBar
 )
 
+// =================
+
 func CreateWindow() *gtk.Window {
 	window, err := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
 	ErrorCheckIHM("Unable to create Window ", err)
