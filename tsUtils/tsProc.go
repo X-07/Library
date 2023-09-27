@@ -160,6 +160,9 @@ func AppendIfNotContains(tab *[]string, str string, max int) bool {
 
 // MinimiseString retourne un s sous la forme xxx....xxx de la longueur len
 func MinimiseString(s string, newLen int) string {
+	if len(s) <= newLen {
+		return s
+	}
 	var deb, fin int
 	if newLen < 11 {
 		newLen = 10
