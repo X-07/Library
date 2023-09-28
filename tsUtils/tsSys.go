@@ -274,6 +274,22 @@ func GetNbProcess(processName string) int64 {
 	return nb
 }
 
+// GetProcessID retourne le PID correspondant au nom du processus
+func GetProcessID(processName string) int64 {
+	out, err := exec.Command("pgrep", "-x", processName).Output()
+	if err != nil {
+		if fmt.Sprint(err) != "exit status 1" {
+			CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetNbProcess()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
+			panic(fmt.Sprint("tsSys - getProcessPIDs > Command: pgrep ", err))
+		}
+	}
+
+	pid_x := strings.Split(string(out), "\n")[0]
+	pid := AtoI64(pid_x)
+
+	return pid
+}
+
 // CallNotifySend affiche un notification popup à l'écran
 func CallNotifySend(cmdArgs []string) {
 	cmdName := "notify-send"
