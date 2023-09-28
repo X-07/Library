@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-type fileStruct struct {
+type FileStruct struct {
 	CpuN      string
 	ChargeIo  int64
 	ChargeUsr int64
@@ -136,8 +136,8 @@ func ReadStatsUp(connect string) int64 {
 }
 
 // GetDataCPU : recherche les infos du CPU
-func GetDataCPU(core string) fileStruct {
-	var file fileStruct
+func GetDataCPU(core string) FileStruct {
+	var file FileStruct
 	enr, err := ReadFileForValue("/proc/stat", "cpu"+core)
 	if err != nil {
 		CallNotifySend([]string{">>> FATAL ERROR <<<", "tsSys.GetDataCPU()", "-t", "20000", "-i", "/usr/share/icons/gnome/32x32/status/dialog-error.png"})
