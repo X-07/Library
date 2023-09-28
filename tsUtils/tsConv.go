@@ -31,11 +31,19 @@ func I64toA(value int64) string {
 }
 
 func AtoF(saisie string) float32 {
-	value, err := strconv.ParseFloat(saisie, 32)
+	return float32(AtoF64(saisie))
+}
+
+func AtoF32(saisie string) float32 {
+	return float32(AtoF64(saisie))
+}
+
+func AtoF64(saisie string) float64 {
+	value, err := strconv.ParseFloat(saisie, 64)
 	if err != nil {
 		value = 0
 	}
-	return float32(value)
+	return value
 }
 
 func FtoA(value float32) string {
