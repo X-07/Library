@@ -715,15 +715,43 @@ func getCodecVideo(format string, formatProfile string, formatLevel string, code
 
 	var codecV string
 
-	switch strings.ToUpper(format) {
-	case "AVC":
-		codecV = "X264" + " - " + formatLevel
-	case "HEVC":
-		codecV = "X265"
-	case "THEORA":
-		codecV = "Theora"
+	switch strings.ToUpper(codecID) {
+	case "DX50":
+		codecV = "DivX 5"
+	case "XVID":
+		codecV = "XviD"
 	default:
-		codecV = "????"
+		switch strings.ToUpper(format) {
+		case "XVID":
+			codecV = "XviD"
+		case "DIV3":
+			codecV = "DivX 3"
+		case "DIV4":
+			codecV = "DivX 4"
+		case "MPEGVIDEO", "MPEG VIDEO": //&& codec == "mpeg-1v" {
+			codecV = "MPEG-1"
+		case "MPEG-4VISUAL":
+			switch strings.ToUpper(codecID) {
+			case "MP42":
+				codecV = "MPEG-4"
+			case "DIVX":
+				codecV = "DivX 4"
+			case "XVID":
+				codecV = "XviD"
+			default:
+				codecV = "MPEG-4"
+			}
+		case "MPEG-4":
+			codecV = format
+		case "AVC":
+			codecV = "X264" + " - " + formatLevel
+		case "HEVC":
+			codecV = "X265"
+		case "THEORA":
+			codecV = "Theora"
+		default:
+			codecV = "????"
+		}
 	}
 	return codecV
 }
