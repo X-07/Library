@@ -3,7 +3,7 @@ package tsMediaInfo
 func GetFormat(width, height int) string {
 	switch {
 	case width == 0 && height == 0:
-		return ""
+		return "NA"
 	case width <= 352 && height <= 288:
 		return "VCD" // 352 x 288 or 352 x 240
 	case width <= 320 && height <= 576:
