@@ -13,7 +13,7 @@ import (
 	tsIO "github.com/X-07/Library/tsUtils"
 )
 
-const version = 0.5
+// const version = 0.6
 
 var start time.Time
 
@@ -339,6 +339,8 @@ func init() {
 		panic(fmt.Sprint("  init > ", err))
 	}
 	tsIO.PrintConsole("App path : " + appRep)
+	duree := time.Since(start).Seconds()
+	tsIO.PrintConsole(fmt.Sprintf("\n\n\nExécutée en %.3fs", duree))
 }
 
 // IsMediaFile - determine si le suffixe du fichier correspond à un media (audio ou vidéo)
@@ -472,41 +474,41 @@ func GetMediaInfo(fileName string) MediaInfo {
 
 	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
 
-	if len(mediaInfo.Video) == 0 {
-		var video mediaInfoVideo
-		video.Format = "?"
-		video.FormatProfile = "?"
-		video.CodecID = "?"
-		video.CodecV = "?"
-		video.Duration, video.XDuration = 0, "?"
-		video.DurationAff, video.XDurationAff = 0, "?"
-		video.BitRate, video.XBitRate = 0, "?"
-		video.Width, video.XWidth = 0, "?"
-		video.Height, video.XHeight = 0, "?"
-		video.FrameRateMode = "?"
-		video.BitDepth, video.XBitDepth = 0, "?"
-		video.Language = "?"
-		mediaInfo.Video = append(mediaInfo.Video, video)
-	}
-	if len(mediaInfo.Audio) == 0 {
-		var audio mediaInfoAudio
-		audio.Format = "?"
-		audio.CodecID = "?"
-		audio.CodecA = "?"
-		audio.Duration, audio.XDuration = 0, "?"
-		audio.DurationAff, audio.XDurationAff = 0, "?"
-		audio.BitRateMode = "?"
-		audio.BitRate, audio.XBitRate = 0, "?"
-		audio.Channel, audio.XChannel = 0, "?"
-		audio.ChannelPositions = "?"
-		audio.ChannelDetail = getChannelDetail("")
-		audio.ChannelAff = "?"
-		audio.SamplingRate, audio.XSamplingRate = 0, "?"
-		audio.BitDepth, audio.XBitDepth = 0, "?"
-		audio.CompressionMode = "?"
-		audio.Language = "?"
-		mediaInfo.Audio = append(mediaInfo.Audio, audio)
-	}
+	// if len(mediaInfo.Video) == 0 {
+	// 	var video mediaInfoVideo
+	// 	video.Format = "?"
+	// 	video.FormatProfile = "?"
+	// 	video.CodecID = "?"
+	// 	video.CodecV = "?"
+	// 	video.Duration, video.XDuration = 0, "?"
+	// 	video.DurationAff, video.XDurationAff = 0, "?"
+	// 	video.BitRate, video.XBitRate = 0, "?"
+	// 	video.Width, video.XWidth = 0, "?"
+	// 	video.Height, video.XHeight = 0, "?"
+	// 	video.FrameRateMode = "?"
+	// 	video.BitDepth, video.XBitDepth = 0, "?"
+	// 	video.Language = "?"
+	// 	mediaInfo.Video = append(mediaInfo.Video, video)
+	// }
+	// if len(mediaInfo.Audio) == 0 {
+	// 	var audio mediaInfoAudio
+	// 	audio.Format = "?"
+	// 	audio.CodecID = "?"
+	// 	audio.CodecA = "?"
+	// 	audio.Duration, audio.XDuration = 0, "?"
+	// 	audio.DurationAff, audio.XDurationAff = 0, "?"
+	// 	audio.BitRateMode = "?"
+	// 	audio.BitRate, audio.XBitRate = 0, "?"
+	// 	audio.Channel, audio.XChannel = 0, "?"
+	// 	audio.ChannelPositions = "?"
+	// 	audio.ChannelDetail = getChannelDetail("")
+	// 	audio.ChannelAff = "?"
+	// 	audio.SamplingRate, audio.XSamplingRate = 0, "?"
+	// 	audio.BitDepth, audio.XBitDepth = 0, "?"
+	// 	audio.CompressionMode = "?"
+	// 	audio.Language = "?"
+	// 	mediaInfo.Audio = append(mediaInfo.Audio, audio)
+	// }
 
 	return mediaInfo
 }
