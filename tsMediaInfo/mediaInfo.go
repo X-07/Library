@@ -526,11 +526,7 @@ func extractFileSize(size string) (float64, string) {
 	result /= 1024 * 1024 * 1024
 
 	result = math.RoundToEven(result*100) / 100
-	if result < 0.1 {
-		resultStr = fmt.Sprintf("%.2f", result)
-	} else {
-		resultStr = fmt.Sprintf("%.1f", result)
-	}
+	resultStr = fmt.Sprintf("%.2f", result)
 	return result, resultStr
 }
 
