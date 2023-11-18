@@ -13,7 +13,7 @@ import (
 	tsIO "github.com/X-07/Library/tsUtils"
 )
 
-// const version = 0.6
+// const version = 0.7
 
 var start time.Time
 
@@ -389,7 +389,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			general.FormatVersion = track.FormatVersion
 			general.FileSize, general.XFileSize = extractFileSize(track.FileSize)
 			general.Duration, general.XDuration = extractDuration(track.Duration)
-			general.DurationAff, general.XDurationAff = extractDurationMN(general.Duration)
+			general.DurationAff, general.XDurationAff = extractDurationMN(track.Duration)
 			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate, track.NominalBitRate, track.BitRateNominal)
 			mediaInfo.General = general
 		case "Video":
@@ -400,7 +400,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			video.CodecID = track.CodecID
 			video.CodecV = getCodecVideo(video.Format, video.FormatProfile, video.FormatLevel, video.CodecID)
 			video.Duration, video.XDuration = extractDuration(track.Duration)
-			video.DurationAff, video.XDurationAff = extractDurationMN(video.Duration)
+			video.DurationAff, video.XDurationAff = extractDurationMN(track.Duration)
 			video.BitRate, video.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate, track.BitRateNominal)
 			video.Width, video.XWidth = extractSize(track.Width)
 			video.Height, video.XHeight = extractSize(track.Height)
@@ -424,7 +424,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			audio.CodecID = track.CodecID
 			audio.CodecA = getCodeCodecAudio(audio.Format, audio.CodecID)
 			audio.Duration, audio.XDuration = extractDuration(track.Duration)
-			audio.DurationAff, audio.XDurationAff = extractDurationMN(audio.Duration)
+			audio.DurationAff, audio.XDurationAff = extractDurationMN(track.Duration)
 			audio.BitRateMode = track.BitRateMode
 			audio.BitRate, audio.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate, track.BitRateNominal)
 			audio.Channel, audio.XChannel = extractChannel(track.Channels)
@@ -534,7 +534,7 @@ func extractFileSize(size string) (float64, string) {
 		resultStr = fmt.Sprintf("%.1f", result+0.05)
 	}
 
-	result = math.RoundToEven(result*100) / 100
+	result = math.Round(result*100) / 100
 	return result, resultStr
 }
 
@@ -559,17 +559,21 @@ func extractDuration(duration string) (int64, string) {
 	if err != nil {
 		return 0, "-X-"
 	}
-	result = math.RoundToEven(result)
+	result = math.Round(result)
 	return int64(result), strconv.FormatInt(int64(result), 10)
 }
 
 // extractDurationMN convertir la durée sec -> mn
-func extractDurationMN(duration int64) (int64, string) {
-	if duration == 0 {
+func extractDurationMN(duration string) (int64, string) {
+	if duration == "" {
 		return 0, "?"
 	}
-	result := (duration + 30) / 60
-	return result, strconv.FormatInt(result, 10)
+	result, err := strconv.ParseFloat(duration, 64)
+	if err != nil {
+		return 0, "-X-"
+	}
+	mn := (result + 30) / 60
+	return int64(mn), strconv.FormatInt(int64(result/60), 10) + "mn " + strconv.FormatInt(int64(result)%60, 10) + "s"
 }
 
 // extractBitRate return bitRate en Kbps (3048426 (bps) --> 3048 (Kbps))
