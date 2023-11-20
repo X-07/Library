@@ -13,7 +13,7 @@ import (
 	tsIO "github.com/X-07/Library/tsUtils"
 )
 
-// const version = 0.7
+// const version = 0.8
 
 var start time.Time
 
@@ -563,17 +563,37 @@ func extractDuration(duration string) (int64, string) {
 	return int64(result), strconv.FormatInt(int64(result), 10)
 }
 
-// extractDurationMN convertir la durée sec -> mn
+// extractDurationMN convertir la durée sec -> h,mn,sec
 func extractDurationMN(duration string) (int64, string) {
 	if duration == "" {
 		return 0, "?"
 	}
-	result, err := strconv.ParseFloat(duration, 64)
+	secF, err := strconv.ParseFloat(duration, 64)
 	if err != nil {
 		return 0, "-X-"
 	}
-	mn := (result + 30) / 60
-	return int64(mn), strconv.FormatInt(int64(result/60), 10) + "mn " + strconv.FormatInt(int64(result)%60, 10) + "s"
+	mn := (secF + 30) / 60
+
+	res := ""
+	sec := int64(secF + 0.5)
+	hrs, sec := sec/3600, sec%3600
+	mins, sec := sec/60, sec%60
+	if hrs != 0 {
+		res += fmt.Sprintf("%dh", hrs)
+	}
+	if mins != 0 {
+		if res != "" {
+			res += " "
+		}
+		res += fmt.Sprintf("%dmn", mins)
+	}
+	if sec != 0 {
+		if res != "" {
+			res += " "
+		}
+		res += fmt.Sprintf("%ds", sec)
+	}
+	return int64(mn), res
 }
 
 // extractBitRate return bitRate en Kbps (3048426 (bps) --> 3048 (Kbps))
