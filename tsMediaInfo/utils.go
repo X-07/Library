@@ -25,7 +25,7 @@ func GetFormat(width, height int) string {
 	}
 }
 
-func GetEncQuality(format string, debitV int, otherPb *string, toReEncode *bool, replace *bool) string {
+func GetEncQuality(format string, debitV int, problem *string, toReEncode *bool, replace *bool) string {
 	encQuality := ""
 	switch format {
 	case "NA":
@@ -42,7 +42,7 @@ func GetEncQuality(format string, debitV int, otherPb *string, toReEncode *bool,
 			encQuality = "Good"
 		default: // >= 3000
 			encQuality = "Hight"
-			*otherPb = "Débit V."
+			*problem = "Débit V."
 			*toReEncode = true
 		}
 	case "FHD":
@@ -57,11 +57,11 @@ func GetEncQuality(format string, debitV int, otherPb *string, toReEncode *bool,
 			encQuality = "Good"
 		default: // >= 5000 {
 			encQuality = "Hight"
-			*otherPb = "Débit V."
+			*problem = "Débit V."
 			*toReEncode = true
 		}
 	case "2K", "4K", "8K":
-		*otherPb = "Format"
+		*problem = "Format"
 		*toReEncode = true
 	default:
 		*replace = true
