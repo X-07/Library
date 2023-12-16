@@ -36,13 +36,21 @@ func GetEncQuality(format string, debitV int, problem *string, toReEncode *bool,
 			encQuality = "NA"
 		case debitV < 1300:
 			encQuality = "Bad"
+			if *problem != "" {
+				*problem += ", "
+			}
+			*problem += "Débit V."
+			*replace = true
 		case debitV < 2000:
 			encQuality = "Light"
 		case debitV < 3000:
 			encQuality = "Good"
 		default: // >= 3000
 			encQuality = "Hight"
-			*problem = "Débit V."
+			if *problem != "" {
+				*problem += ", "
+			}
+			*problem += "Débit V."
 			*toReEncode = true
 		}
 	case "FHD":
@@ -51,19 +59,34 @@ func GetEncQuality(format string, debitV int, problem *string, toReEncode *bool,
 			encQuality = "NA"
 		case debitV < 2500:
 			encQuality = "Bad"
+			if *problem != "" {
+				*problem += ", "
+			}
+			*problem += "Débit V."
+			*replace = true
 		case debitV < 4000:
 			encQuality = "Light"
 		case debitV < 5000:
 			encQuality = "Good"
 		default: // >= 5000 {
 			encQuality = "Hight"
-			*problem = "Débit V."
+			if *problem != "" {
+				*problem += ", "
+			}
+			*problem += "Débit V."
 			*toReEncode = true
 		}
 	case "2K", "4K", "8K":
-		*problem = "Format"
+		if *problem != "" {
+			*problem += ", "
+		}
+		*problem += "Format V."
 		*toReEncode = true
 	default:
+		if *problem != "" {
+			*problem += ", "
+		}
+		*problem += "Format V."
 		*replace = true
 	}
 	return encQuality
