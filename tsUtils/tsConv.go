@@ -2,8 +2,14 @@ package tsUtils
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
+
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 func AtoI(saisie string) int {
@@ -139,4 +145,50 @@ func ConvertDate(date string) string {
 		result = day + "/" + month + "/" + dateElmt[2]
 	}
 	return result
+}
+
+// removeAccents() remplace les caractères accentués par leurs équivalents non accentués
+func removeAccents(s string) string {
+	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+	output, _, err := transform.String(t, s)
+	if err != nil {
+		output = s
+	}
+	return output
+}
+
+// ### TranscodeName() - normalise le nom pour faciliter les comparaisons
+func TranscodeName(nom string) string {
+	//#remplace les caractères accentués par des caractères sans accent
+	nom = removeAccents(nom)
+	//#passer en minuscule le titre (name)
+	nom = strings.ToLower(nom)
+	//#supprime un caractère :|(|)|[|]|!|
+	nom = strings.Replace(nom, ":", "", -1)
+	nom = strings.Replace(nom, "(", "", -1)
+	nom = strings.Replace(nom, ")", "", -1)
+	nom = strings.Replace(nom, "[", "", -1)
+	nom = strings.Replace(nom, "]", "", -1)
+	nom = strings.Replace(nom, "!", "", -1)
+	//#remplace un caractère par blanc '|’|-|–|,| et |
+	nom = strings.Replace(nom, "'", " ", -1)
+	nom = strings.Replace(nom, "’", " ", -1)
+	nom = strings.Replace(nom, "–", " ", -1)
+	nom = strings.Replace(nom, ",", " ", -1)
+	nom = strings.Replace(nom, "|", " ", -1)
+	// nom = strings.Replace(nom, "-", " ", -1)
+	//#remplace un caractère par blanc _
+	nom = strings.Replace(nom, "_", " ", -1)
+	//#remplace un caractère par blanc °|/|
+	nom = strings.Replace(nom, "°", " ", -1)
+	nom = strings.Replace(nom, "/", " ", -1)
+	//#remplace ² par .2
+	nom = strings.Replace(nom, "²", ".2", -1)
+	//#remplace plusieurs '.' par un seul
+	re := regexp.MustCompile(`(  +)`)
+	nom = re.ReplaceAllLiteralString(nom, " ")
+	//#TRIM
+	nom = strings.TrimSpace(nom)
+
+	return nom
 }
