@@ -353,6 +353,25 @@ func IsMediaFile(ext string) bool {
 	return result
 }
 
+// GetMediaInfoAudio : récupère les infos du média Audio (Durée, BitRate, SamplingRate)
+func GetMediaInfoAudio(fileName string) (string, string, string) {
+	var mediainfoCmd string
+	mediainfoCmd, err := exec.LookPath("mediainfo")
+	if err != nil {
+		panic(fmt.Sprint("  could not find path to 'mediainfo': ", err))
+	}
+	tsIO.PrintConsole("-- found 'mediainfo' command: ", mediainfoCmd)
+
+	out, err := exec.Command(mediainfoCmd, "--Inform=Audio;%Duration/String%,%BitRate/String%,%SamplingRate/String%", fileName).Output()
+	if err != nil {
+		panic(fmt.Sprint("Command: mediainfo ", err))
+	}
+
+	result := strings.Split(strings.Split(string(out), "\n")[0], ",")
+
+	return strings.Replace(result[0], "min", "mn", 1), result[1], result[2]
+}
+
 // GetMediaInfoData : récupère les infos du média dans MediaInfoXML1404 (données brutes)
 func GetMediaInfoData(fileName string) MediaInfoXML {
 	var mediainfoCmd string
