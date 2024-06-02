@@ -2,9 +2,14 @@ package tsUtils
 
 import (
 	"bytes"
+	"image"
 	"image/jpeg"
+	"image/png"
 	"io"
+	"os"
+	"path/filepath"
 
+	"golang.org/x/image/draw"
 	"golang.org/x/image/webp"
 )
 
@@ -19,4 +24,53 @@ func ConvertWebpToJpgBytes(photo io.Reader) ([]byte, error) {
 		}
 	}
 	return nil, err
+}
+
+type JpegQuality int64
+
+const (
+	NEAREST_NEIGHBOR JpegQuality = iota
+	APPROX_BI_LINEAR
+	BI_LINEAR
+	CATMULL_ROM
+)
+
+func ResizeImg(srcPath, resizePath string, newSizeWidth, newSizeHeight int, jpegQuality JpegQuality) {
+	input, _ := os.Open(srcPath)
+	defer input.Close()
+	output, _ := os.Create(resizePath)
+	defer output.Close()
+	ext := filepath.Ext(srcPath)
+	var src image.Image
+	switch ext {
+	case ".png":
+		// Decode the image (from PNG to image.Image):
+		src, _ = png.Decode(input)
+	case ".jpg", ".jpeg", "":
+		// Decode the image (from JPG to image.Image):
+		src, _ = jpeg.Decode(input)
+	default:
+		return
+	}
+	dst := image.NewRGBA(image.Rect(0, 0, newSizeWidth, newSizeHeight))
+	// Resize:
+	switch jpegQuality {
+	case NEAREST_NEIGHBOR:
+		draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	case APPROX_BI_LINEAR:
+		draw.ApproxBiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	case BI_LINEAR:
+		draw.BiLinear.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	case CATMULL_ROM:
+		draw.CatmullRom.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+	}
+
+	switch ext {
+	case ".png":
+		// Encode to `output`:
+		png.Encode(output, dst)
+	case ".jpg", ".jpeg", "":
+		// Encode to `output`:
+		jpeg.Encode(output, dst, nil)
+	}
 }
