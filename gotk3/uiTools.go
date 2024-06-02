@@ -10,6 +10,8 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
+type FnEditTextCallback func(renderer *gtk.CellRendererText, xPath, newText string)
+
 var (
 	progressBarPopup  *gtk.Window
 	ProgressBar       *gtk.ProgressBar
@@ -43,6 +45,33 @@ func CreatePopup(window *gtk.Window, border uint, position gtk.WindowPosition) *
 	return popup
 }
 
+/*
+*
+
+	CreateMenuPopup()
+	window *gtk.Window : fenêtre parente
+	widget gtk.IWidget : le widget au dessous duquel est affiché le menu popup
+	border uint : la marge de la bordure
+	dx, dy int : décalage horizontal et vertical
+*/
+func CreateMenuPopup(window *gtk.Window, widget gtk.IWidget, border uint, dx, dy int) *gtk.Window {
+	popup := CreateWindow()
+	popup.SetPosition(gtk.WIN_POS_NONE)
+	popup.SetBorderWidth(border)
+	popup.SetTransientFor(window)
+	popup.SetModal(false)
+	popup.SetDecorated(false)
+	popup.Connect("destroy", popup.Destroy)
+	popup.Connect("focus-out-event", popup.Destroy)
+
+	windowX, windowY := window.GetPosition()
+	widgetX, widgetY, _ := widget.ToWidget().TranslateCoordinates(window, 0, 0)
+	_, widgetH := widget.ToWidget().GetPreferredHeight()
+	popup.Move(windowX+widgetX+dx, windowY+widgetY+widgetH+dy)
+
+	return popup
+}
+
 func CreateCssProvider() *gtk.CssProvider {
 	provider, err := gtk.CssProviderNew()
 	ErrorCheckIHM("Unable to create CssProviderNew ", err)
@@ -72,6 +101,12 @@ func CreateHPaned() *gtk.Paned {
 	panedWin, err := gtk.PanedNew(gtk.ORIENTATION_HORIZONTAL)
 	ErrorCheckIHM("Unable to create Paned ", err)
 	return panedWin
+}
+
+func CreateOverlay() *gtk.Overlay {
+	overlay, err := gtk.OverlayNew()
+	ErrorCheckIHM("Unable to create overlay ", err)
+	return overlay
 }
 
 func CreateNoteBook() *gtk.Notebook {
@@ -216,6 +251,20 @@ func CreateImageMenuItem(label string, pixbuf *gdk.Pixbuf) *gtk.MenuItem {
 	return menuItem
 }
 
+func UpdateImageMenuItem(menuItem *gtk.MenuItem, newLabel string, newPixbuf *gdk.Pixbuf) {
+	iWidget, _ := menuItem.GetChild()
+	menuItem.Remove(iWidget)
+
+	itemBox := CreateHBox(0)
+
+	itemBox.PackStart(CreateImageFromPixbuf(newPixbuf), false, false, 0)
+
+	itemLabel := CreateLabel(newLabel)
+	itemLabel.SetMarginStart(10)
+	itemBox.PackStart(itemLabel, false, false, 0)
+	menuItem.Add(itemBox)
+}
+
 func CreateRatingMenuItem(label string, pixbufList []*gdk.Pixbuf) *gtk.MenuItem {
 	menuItem := CreateMenuItem()
 	itemBox := CreateHBox(0)
@@ -284,13 +333,58 @@ func CreateTextColumn(title string, id int) *gtk.TreeViewColumn {
 	return CreateTreeViewColumnNewWithAttribute(title, CreateCellRendererText(), "text", id)
 }
 
+func CreateTextHeaderColumn(id int) (*gtk.TreeViewColumn, *gtk.Label) {
+	header := CreateLabel("")
+	header.Show()
+	column := CreateTreeViewColumnNewWithAttribute("", CreateCellRendererText(), "text", id)
+	column.SetWidget(header)
+	return column, header
+}
+
+func CreateEditColumn(title string, id int, fnEditText FnEditTextCallback) *gtk.TreeViewColumn {
+	cellRenderer := CreateCellRendererText()
+	cellRenderer.SetProperty("editable", true)
+	cellRenderer.Connect("edited", func(renderer *gtk.CellRendererText, xPath, newText string) {
+		fnEditText(renderer, xPath, newText)
+	})
+	return CreateTreeViewColumnNewWithAttribute(title, cellRenderer, "text", id)
+}
+
+func CreateEditHeaderColumn(id int, textEdited interface{}) (*gtk.TreeViewColumn, *gtk.Label) {
+	cellRenderer := CreateCellRendererText()
+	cellRenderer.SetProperty("editable", true)
+	cellRenderer.Connect("edited", textEdited)
+	header := CreateLabel("")
+	header.Show()
+	column := CreateTreeViewColumnNewWithAttribute("", cellRenderer, "text", id)
+	column.SetWidget(header)
+	return column, header
+}
+
 func CreateImageColumn(title string, id int) *gtk.TreeViewColumn {
 	return CreateTreeViewColumnNewWithAttribute(title, CreateCellRendererPixbuf(), "pixbuf", id)
+}
+
+func CreateImageHeaderColumn(id int) (*gtk.TreeViewColumn, *gtk.Label) {
+	header := CreateLabel("")
+	header.Show()
+	column := CreateTreeViewColumnNewWithAttribute("", CreateCellRendererPixbuf(), "pixbuf", id)
+	column.SetWidget(header)
+	return column, header
 }
 
 func CreateToggleColumn(title string, id int) (*gtk.TreeViewColumn, *gtk.CellRendererToggle) {
 	cellRenderer := CreateCellRendererToggle()
 	return CreateTreeViewColumnNewWithAttribute(title, cellRenderer, "active", id), cellRenderer
+}
+
+func CreateToggleHeaderColumn(id int) (*gtk.TreeViewColumn, *gtk.CellRendererToggle, *gtk.Label) {
+	cellRenderer := CreateCellRendererToggle()
+	header := CreateLabel("")
+	header.Show()
+	column := CreateTreeViewColumnNewWithAttribute("", cellRenderer, "active", id)
+	column.SetWidget(header)
+	return column, cellRenderer, header
 }
 
 func CreateProgressBar() *gtk.ProgressBar {
