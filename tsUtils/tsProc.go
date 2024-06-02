@@ -1,9 +1,46 @@
 package tsUtils
 
 import (
+	"math"
 	"strconv"
 )
 
+// NumberFormatting 		1047527424 octets ==> 999 Mo
+//
+//	kindOf = "o" pour Octet ou "b" pour bit par ex ou toute autre lettre
+func NumberFormatting(val int64, kindOf string) (float64, string) {
+	var round float64
+	var roundOn float64 = 0.5
+	var places int = 2
+	var suffixes [5]string
+
+	suffixes[0] = kindOf + " "
+	suffixes[1] = "K" + kindOf
+	suffixes[2] = "M" + kindOf
+	suffixes[3] = "G" + kindOf
+	suffixes[4] = "T" + kindOf
+
+	if val == 0 {
+		return 0, suffixes[0]
+	}
+
+	base := math.Log(float64(val)) / math.Log(1024)
+	size := math.Pow(1024, base-math.Floor(base))
+
+	pow := math.Pow(10, float64(places))
+	digit := pow * size
+	_, div := math.Modf(digit)
+	if div >= roundOn {
+		round = math.Ceil(digit)
+	} else {
+		round = math.Floor(digit)
+	}
+	newVal := round / pow
+
+	return newVal, suffixes[int(math.Floor(base))]
+}
+
+// Deprecated: should not be used - Use NumberFormatting(val, kindOf) instead.
 // MiseEnFormeByte (nb octets)
 func MiseEnFormeByte(bps int64) string {
 	var unit string
@@ -49,6 +86,7 @@ func MiseEnFormeByte(bps int64) string {
 	return xSpeed + unit
 }
 
+// Deprecated: should not be used - Use NumberFormatting(val, kindOf) instead.
 // MiseEnFormeBit (nb bits)
 func MiseEnFormeBit(bps int64) string {
 	var unit string
@@ -94,6 +132,7 @@ func MiseEnFormeBit(bps int64) string {
 	return xSpeed + unit
 }
 
+// Deprecated: should not be used - Use NumberFormatting(val, kindOf) instead.
 // MiseEnFormeGiga : function de mise en forme
 func MiseEnFormeGiga(val int64) string {
 	var xResult string
@@ -156,6 +195,16 @@ func AppendIfNotContains(tab *[]string, str string, max int) bool {
 		}
 	}
 	return true
+}
+
+// IsValueIntoSlice: retourne si la valeur ('value') est présente dans la liste ('slice') ou pas.
+func IsValueIntoSlice(slice []int64, value int64) bool {
+	for _, elmt := range slice {
+		if elmt == value {
+			return true
+		}
+	}
+	return false
 }
 
 // MinimiseString retourne un s sous la forme xxx....xxx de la longueur len
