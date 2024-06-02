@@ -174,11 +174,14 @@ type MediaInfoXML struct {
 			IsStreamable             string `xml:"IsStreamable"`
 			Title                    string `xml:"Title"`
 			Movie                    string `xml:"Movie"`
+			EncodedBy                string `xml:"EncodedBy"`
+			ContentType              string `xml:"ContentType"`
 			EncodedDate              string `xml:"Encoded_Date"`
 			FileModifiedDate         string `xml:"File_Modified_Date"`
 			FileModifiedDateLocal    string `xml:"File_Modified_Date_Local"`
 			EncodedApplication       string `xml:"Encoded_Application"`
 			EncodedLibrary           string `xml:"Encoded_Library"`
+			Cover                    string `xml:"Cover"`
 			StreamOrder              string `xml:"StreamOrder"`
 			ID                       string `xml:"ID"`
 			FormatProfile            string `xml:"Format_Profile"`
@@ -250,6 +253,7 @@ type mediaInfoGeneral struct {
 	XOverallBitRate string  // 3048 ( < 3048426 bps)
 	AudioMultiPiste mediaInfoMultiPiste
 	TextMultiPiste  mediaInfoMultiPiste
+	Cover           bool
 }
 
 // mediaInfoVideo : structure Vidéo (Video_struct)
@@ -410,6 +414,10 @@ func GetMediaInfo(fileName string) MediaInfo {
 			general.Duration, general.XDuration = extractDuration(track.Duration)
 			general.DurationAff, general.XDurationAff = extractDurationMN(track.Duration)
 			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate, track.NominalBitRate, track.BitRateNominal)
+			general.Cover = false
+			if strings.ToLower(track.Cover) == "yes" {
+				general.Cover = true
+			}
 			mediaInfo.General = general
 		case "Video":
 			var video mediaInfoVideo
@@ -441,7 +449,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			var audio mediaInfoAudio
 			audio.Format = track.Format
 			audio.CodecID = track.CodecID
-			audio.CodecA = getCodeCodecAudio(audio.Format, audio.CodecID)
+			audio.CodecA = getCodeCodecAudio(audio.Format)
 			audio.Duration, audio.XDuration = extractDuration(track.Duration)
 			audio.DurationAff, audio.XDurationAff = extractDurationMN(track.Duration)
 			audio.BitRateMode = track.BitRateMode
@@ -871,7 +879,7 @@ func getCodecVideo(format string, formatProfile string, formatLevel string, code
 //		format     : 'AC-3'
 //		codecID    : 'A_AC3'
 
-func getCodeCodecAudio(format string, codecID string) string {
+func getCodeCodecAudio(format string) string {
 	var codecA string
 	if strings.ToUpper(format) == "MPEG AUDIO" {
 		codecA = "MP3"

@@ -8,6 +8,6 @@ import (
 )
 
 func TestGetMediaInfo(t *testing.T) {
-	mediaInfo := GetMediaInfo("/home/jluc1804x/Téléchargements/Movies/Films/10.Minutes.Gone.mkv")
+	mediaInfo := GetMediaInfo("/home/jluc20mx/Téléchargements/Movies/Films/PB/Témoin.muet.mkv")
 	t.Log(fmt.Printf("%+v", mediaInfo))
 }
