@@ -372,8 +372,11 @@ func GetMediaInfoAudio(fileName string) (string, string, string) {
 	}
 
 	result := strings.Split(strings.Split(string(out), "\n")[0], ",")
-
-	return strings.Replace(result[0], "min", "mn", 1), result[1], result[2]
+	if len(result) == 3 {
+		return strings.Replace(result[0], "min", "mn", 1), result[1], result[2]
+	} else {
+		return "", "", ""
+	}
 }
 
 // GetMediaInfoData : récupère les infos du média dans MediaInfoXML1404 (données brutes)

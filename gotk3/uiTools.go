@@ -350,6 +350,15 @@ func CreateEditColumn(title string, id int, fnEditText FnEditTextCallback) *gtk.
 	return CreateTreeViewColumnNewWithAttribute(title, cellRenderer, "text", id)
 }
 
+func CreateEditMarkupColumn(title string, id int, fnEditText FnEditTextCallback) *gtk.TreeViewColumn {
+	cellRenderer := CreateCellRendererText()
+	cellRenderer.SetProperty("editable", true)
+	cellRenderer.Connect("edited", func(renderer *gtk.CellRendererText, xPath, newText string) {
+		fnEditText(renderer, xPath, newText)
+	})
+	return CreateTreeViewColumnNewWithAttribute(title, cellRenderer, "markup", id)
+}
+
 func CreateEditHeaderColumn(id int, textEdited interface{}) (*gtk.TreeViewColumn, *gtk.Label) {
 	cellRenderer := CreateCellRendererText()
 	cellRenderer.SetProperty("editable", true)

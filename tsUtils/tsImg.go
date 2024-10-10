@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/image/draw"
 	"golang.org/x/image/webp"
@@ -35,21 +36,24 @@ const (
 	CATMULL_ROM
 )
 
-func ResizeImg(srcPath, resizePath string, newSizeWidth, newSizeHeight int, jpegQuality JpegQuality) {
+func ResizeImg(srcPath, resizePath string, defaultImg []byte, newSizeWidth, newSizeHeight int, jpegQuality JpegQuality) {
 	input, _ := os.Open(srcPath)
 	defer input.Close()
 	output, _ := os.Create(resizePath)
 	defer output.Close()
-	ext := filepath.Ext(srcPath)
+	ext := strings.ToLower(filepath.Ext(srcPath))
 	var src image.Image
 	switch ext {
 	case ".png":
 		// Decode the image (from PNG to image.Image):
 		src, _ = png.Decode(input)
-	case ".jpg", ".jpeg", "":
+	case ".jpg", ".jpeg":
 		// Decode the image (from JPG to image.Image):
 		src, _ = jpeg.Decode(input)
 	default:
+		if err := os.WriteFile(resizePath, defaultImg, 0644); err != nil {
+			return
+		}
 		return
 	}
 	dst := image.NewRGBA(image.Rect(0, 0, newSizeWidth, newSizeHeight))

@@ -1,11 +1,16 @@
 package tsUtils
 
 import (
+	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
-// NumberFormatting 		1047527424 octets ==> 999 Mo
+// NumberFormatting 		1047527424 octets ==>  999 Mo
+//
+//							1048576000 octets ==> 1000 Mo ou 0.97 Go
+//							1073741824 octets ==>    1 Go
 //
 //	kindOf = "o" pour Octet ou "b" pour bit par ex ou toute autre lettre
 func NumberFormatting(val int64, kindOf string) (float64, string) {
@@ -38,6 +43,28 @@ func NumberFormatting(val int64, kindOf string) (float64, string) {
 	newVal := round / pow
 
 	return newVal, suffixes[int(math.Floor(base))]
+}
+
+func GetNaturalSize(b int64, kindOf string) (float64, string) {
+	const unit = 1000
+	if b < unit {
+		return float64(b), kindOf + " "
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return float64(b) / float64(div), fmt.Sprintf("%c"+kindOf, "KMGTPE"[exp])
+}
+
+func GetToolSize(b int64, kindOf string) string {
+	val, unit := GetNaturalSize(b, kindOf)
+	if strings.HasSuffix(unit, " ") {
+		unit += " "
+	}
+	result := strings.ReplaceAll(fmt.Sprintf("%6.2f", val), " ", "  ")
+	return fmt.Sprintf("%s %s", result, unit)
 }
 
 // Deprecated: should not be used - Use NumberFormatting(val, kindOf) instead.
