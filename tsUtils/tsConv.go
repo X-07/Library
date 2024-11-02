@@ -108,9 +108,16 @@ func SliceTrim(in []string) []string {
 }
 
 func ConvertDate(date string) string {
-	result := date
+	result := ""
 	dateElmt := strings.Split(date, " ")
-	if len(dateElmt) == 3 {
+	switch len(dateElmt) {
+	case 1:
+		if val, err := strconv.Atoi(date); err == nil { // donc numérique
+			if val > 1900 {
+				result = date
+			}
+		}
+	case 3:
 		month := ""
 		switch dateElmt[1] {
 		case "janvier":
@@ -138,11 +145,18 @@ func ConvertDate(date string) string {
 		case "décembre":
 			month = "12"
 		}
-		day := dateElmt[0]
-		if len(day) == 1 {
-			day = "0" + day
+		if month != "" {
+			if _, err := strconv.Atoi(dateElmt[0]); err == nil { // donc numérique
+				day := dateElmt[0]
+				if len(day) == 1 {
+					day = "0" + day
+				}
+
+				if _, err := strconv.Atoi(dateElmt[2]); err == nil { // donc numérique
+					result = day + "/" + month + "/" + dateElmt[2]
+				}
+			}
 		}
-		result = day + "/" + month + "/" + dateElmt[2]
 	}
 	return result
 }
