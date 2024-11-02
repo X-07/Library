@@ -107,17 +107,18 @@ func SliceTrim(in []string) []string {
 	return out
 }
 
-func ConvertDate(date string) string {
+func ConvertDate(dateIn string) string {
+	date := strings.Trim(dateIn, " ")
 	result := ""
 	dateElmt := strings.Split(date, " ")
-	switch len(dateElmt) {
-	case 1:
+	switch {
+	case len(dateElmt) == 1:
 		if val, err := strconv.Atoi(date); err == nil { // donc numérique
 			if val > 1900 {
 				result = date
 			}
 		}
-	case 3:
+	case len(dateElmt) >= 3:
 		month := ""
 		switch dateElmt[1] {
 		case "janvier":
