@@ -2,6 +2,7 @@ package gotk3
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -13,9 +14,11 @@ import (
 type FnEditTextCallback func(renderer *gtk.CellRendererText, xPath, newText string)
 
 var (
-	progressBarPopup  *gtk.Window
-	ProgressBar       *gtk.ProgressBar
-	ProgressBarDetail *gtk.ProgressBar
+	progressBarPopup      *gtk.Window
+	progressBarMain       *gtk.Box
+	progressBarLineDetail *gtk.Box
+	ProgressBar           *gtk.ProgressBar
+	ProgressBarDetail     *gtk.ProgressBar
 )
 
 // =================
@@ -410,6 +413,19 @@ func CreateSeparatorMenuItem() *gtk.SeparatorMenuItem {
 	return separator
 }
 
+func CreateSeparatorLabelMenuItem(label string) *gtk.SeparatorMenuItem {
+	separator, err := gtk.SeparatorMenuItemNew()
+	ErrorCheckIHM("Unable to create SeparatorMenuItem ", err)
+	if label != "" {
+		label += "     "
+		separator.SetMarginTop(10)
+		separator.SetMarginBottom(2)
+	}
+	separator.SetLabel(label)
+	separator.SetHAlign(gtk.ALIGN_END)
+	return separator
+}
+
 func CreateEntry() *gtk.Entry {
 	entry, err := gtk.EntryNew()
 	ErrorCheckIHM("Unable to create Entry ", err)
@@ -706,6 +722,30 @@ func SetComboBoxText(comboBox *gtk.ComboBoxText, value string) bool {
 }
 
 // =================
+func SetRadioButton(radioButton []*gtk.RadioButton, value string, nilValueList []string, valueList []string) {
+	if slices.Contains(nilValueList, value) {
+		radioButton[0].SetActive(true)
+	} else {
+		for idx, elmt := range valueList {
+			if elmt == value {
+				radioButton[idx].SetActive(true)
+				break
+			}
+		}
+	}
+}
+func GetRadioButton(radioButton []*gtk.RadioButton) (int, string) {
+	for idx, radio := range radioButton {
+		if radio.GetActive() {
+			radioLabel, err := radio.GetLabel()
+			ErrorCheckIHM("Unable to create GetLabel from RadioButton ", err)
+			return idx, radioLabel
+		}
+	}
+	return -1, ""
+}
+
+// =================
 func GetComboBoxTextList(comboBox *gtk.ComboBoxText) []string {
 	iModel, err := comboBox.GetModel()
 	ErrorCheckIHM("Unable to create ComboBox.GetModel ", err)
@@ -986,12 +1026,12 @@ func ItoA(value int) string {
 }
 
 // =================
-func MakeProgressBarPopup(win *gtk.Window, border uint, title string, position gtk.WindowPosition) {
+func MakeProgressBarPopup(win *gtk.Window, border uint, title string, position gtk.WindowPosition) *gtk.Window {
 	progressBarPopup = CreatePopup(win, border, position)
-	progressBarPopup.SetDefaultSize(640, 100) // ($width, $height)
+	progressBarPopup.SetDefaultSize(640, 60) // ($width, $height)
 	progressBarPopup.SetTitle(title)
 
-	progressBarMain := CreateVBox(0)
+	progressBarMain = CreateVBox(0)
 	progressBarPopup.Add(progressBarMain)
 
 	progressBarLine := CreateHBox(0)
@@ -1002,23 +1042,44 @@ func MakeProgressBarPopup(win *gtk.Window, border uint, title string, position g
 	progressBarLine.PackStart(ProgressBar, true, true, 20)
 	ProgressBar.SetShowText(true)
 
-	progressBarLineDetail := CreateHBox(0)
-	progressBarMain.PackStart(progressBarLineDetail, false, false, 0)
-	progressBarLineDetail.SetMarginBottom(15)
 	ProgressBarDetail = CreateProgressBar()
-	progressBarLineDetail.PackStart(ProgressBarDetail, true, true, 20)
-	ProgressBarDetail.SetShowText(true)
 
 	progressBarPopup.Connect("destroy", func() {
 		// fmt.Println("progressBarPopup DESTROY")
 		progressBarPopup.Destroy()
 		ProgressBar = nil
 		ProgressBarDetail = nil
+		if progressBarLineDetail != nil {
+			progressBarLineDetail = nil
+		}
+		progressBarMain = nil
 		progressBarPopup = nil
 	})
 
 	progressBarPopup.ShowAll()
-	ProgressBarDetail.Hide()
+
+	return progressBarPopup
+}
+
+func MakeProgressBarDetail() {
+	progressBarLineDetail = CreateHBox(0)
+	progressBarMain.PackStart(progressBarLineDetail, false, false, 0)
+	progressBarLineDetail.SetMarginBottom(15)
+	progressBarLineDetail.PackStart(ProgressBarDetail, true, true, 20)
+	ProgressBarDetail.SetShowText(true)
+
+	progressBarLineDetail.ShowAll()
+}
+
+func HideProgressBarDetail() {
+	progressBarLineDetail.Hide()
+	progressBarLineDetail.Destroy()
+	progressBarMain.Remove(progressBarLineDetail)
+	progressBarPopup.Resize(640, 60)
+}
+
+func SetProgressBarBorder(color string) {
+	progressBarMain.SetName(color)
 }
 
 func CloseProgressBarPopup() {

@@ -12,8 +12,8 @@ func GetFormat(width, height int) string {
 		return "DVD" // 720 x 576 or 720 x 480
 	case width <= 1366 && height <= 768:
 		return "HD" // 1280 x 720 or 1366 x 768
-	case width <= 1920 && height <= 1080:
-		return "FHD" // 1920 x 1080
+	case width <= 1920 && height <= 1152:
+		return "FHD" // 1920 x 1080 || ---- x 1088 || ---- x 1152
 	case width <= 2560 && height <= 1440:
 		return "2K" // 2560 x 1440
 	case width <= 3840 && height <= 2160:
