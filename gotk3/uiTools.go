@@ -596,15 +596,14 @@ func CreateImageButton(label string, icon *gdk.Pixbuf) *gtk.Button {
 }
 
 func CreateImageButtonWithStyle(label string, icon *gdk.Pixbuf, styles ...string) *gtk.Button {
-	button := CreateTextButton(label)
+	button := CreateTextButtonWithStyle(label, styles...)
 	button.SetAlwaysShowImage(true)
 	button.SetImage(CreateImageFromPixbuf(icon))
-	styleCtx, err := button.GetStyleContext()
-	ErrorCheckIHM("Unable to get StyleButton ", err)
-	for _, style := range styles {
-		styleCtx.AddClass(style)
-	}
 	return button
+}
+
+func ModifyButtonLabel(label string, button *gtk.Button) {
+	button.SetLabel(label)
 }
 
 func CreateIconButton(label string, icon []byte) *gtk.Button {
@@ -1046,7 +1045,7 @@ func MakeProgressBarPopup(win *gtk.Window, border uint, title string, position g
 
 	progressBarPopup.Connect("destroy", func() {
 		// fmt.Println("progressBarPopup DESTROY")
-		progressBarPopup.Destroy()
+		// progressBarPopup.Destroy()
 		ProgressBar = nil
 		ProgressBarDetail = nil
 		if progressBarLineDetail != nil {
@@ -1083,8 +1082,11 @@ func SetProgressBarBorder(color string) {
 }
 
 func CloseProgressBarPopup() {
-	progressBarPopup.Close()
-	// progressBarPopup.Destroy()
+	if ProgressBar != nil {
+		// fmt.Println("CloseProgressBarPopup")
+		progressBarPopup.Close()
+		progressBarPopup.Destroy()
+	}
 }
 
 // ***********************************************************
