@@ -226,6 +226,11 @@ type MediaInfoXML struct {
 			StreamSizeProportion     string `xml:"StreamSize_Proportion"`
 			ServiceKind              string `xml:"ServiceKind"`
 			ElementCount             string `xml:"ElementCount"`
+			Description              string `xml:"Description"`
+			Extra                    struct {
+				Attachments string `xml:"Attachments"`
+				PosterUrl   string `xml:"_POSTER_URL"`
+			} `xml:"extra"`
 		} `xml:"track"`
 	} `xml:"media"`
 }
@@ -253,7 +258,11 @@ type mediaInfoGeneral struct {
 	XOverallBitRate string  // 3048 ( < 3048426 bps)
 	AudioMultiPiste mediaInfoMultiPiste
 	TextMultiPiste  mediaInfoMultiPiste
+	Title           string
+	Synopsis        string
+	PosterUrl       string
 	Cover           bool
+	Attachments     bool
 }
 
 // mediaInfoVideo : structure Vidéo (Video_struct)
@@ -417,9 +426,16 @@ func GetMediaInfo(fileName string) MediaInfo {
 			general.Duration, general.XDuration = extractDuration(track.Duration)
 			general.DurationAff, general.XDurationAff = extractDurationMN(track.Duration)
 			general.OverallBitRate, general.XOverallBitRate = extractBitRate(track.OverallBitRate, track.NominalBitRate, track.BitRateNominal)
+			general.Title = track.Title
+			general.Synopsis = track.Description
+			general.PosterUrl = track.Extra.PosterUrl
 			general.Cover = false
 			if strings.ToLower(track.Cover) == "yes" {
 				general.Cover = true
+			}
+			general.Attachments = false
+			if track.Extra.Attachments != "" {
+				general.Attachments = true
 			}
 			mediaInfo.General = general
 		case "Video":
