@@ -467,6 +467,13 @@ func CreateBoldLabel(libelle string) *gtk.Label {
 	return label
 }
 
+func CreateMarkupLabel(libelle string) *gtk.Label {
+	label, err := gtk.LabelNew("")
+	ErrorCheckIHM("Unable to create Label ", err)
+	label.SetMarkup(libelle)
+	return label
+}
+
 func CreateLabelWithStyle(libelle string, styles ...string) *gtk.Label {
 	label := CreateLabel(libelle)
 	styleCtx, err := label.GetStyleContext()
