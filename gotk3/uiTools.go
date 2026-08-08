@@ -413,7 +413,7 @@ func CreateSeparatorMenuItem() *gtk.SeparatorMenuItem {
 	return separator
 }
 
-func CreateSeparatorLabelMenuItem(label string) *gtk.SeparatorMenuItem {
+func CreateSeparatorLabelRightMenuItem(label string) *gtk.SeparatorMenuItem {
 	separator, err := gtk.SeparatorMenuItemNew()
 	ErrorCheckIHM("Unable to create SeparatorMenuItem ", err)
 	if label != "" {
@@ -423,6 +423,29 @@ func CreateSeparatorLabelMenuItem(label string) *gtk.SeparatorMenuItem {
 	}
 	separator.SetLabel(label)
 	separator.SetHAlign(gtk.ALIGN_END)
+	return separator
+}
+
+func CreateSeparatorLabelLeftMenuItem(label string) *gtk.SeparatorMenuItem {
+	separator, err := gtk.SeparatorMenuItemNew()
+	ErrorCheckIHM("Unable to create SeparatorMenuItem ", err)
+	if label != "" {
+		label += "        "
+		separator.SetMarginTop(10)
+		separator.SetName("separatorLabel")
+	}
+	separator.SetLabel(label)
+	separator.SetHAlign(gtk.ALIGN_FILL)
+	return separator
+}
+
+func CreateHalfSeparatorMenuItem() *gtk.SeparatorMenuItem {
+	separator, err := gtk.SeparatorMenuItemNew()
+	ErrorCheckIHM("Unable to create SeparatorMenuItem ", err)
+	label := ""
+	separator.SetName("separator")
+	separator.SetLabel(label)
+	separator.SetHAlign(gtk.ALIGN_FILL)
 	return separator
 }
 
@@ -547,9 +570,24 @@ func CreateComboBoxText(liste []string) *gtk.ComboBoxText {
 	return comboBoxText
 }
 
-func CreateComboBoxWithModel(model gtk.ITreeModel) *gtk.ComboBox {
+func CreateComboBoxWithModel(model gtk.ITreeModel, column int) *gtk.ComboBox {
 	comboBox, err := gtk.ComboBoxNewWithModel(model)
 	ErrorCheckIHM("Unable to create ComboBox ", err)
+	cellRenderer := CreateCellRendererText()
+	comboBox.PackStart(cellRenderer, true)
+	comboBox.AddAttribute(cellRenderer, "text", column)
+	// comboBox.SetActive(0)
+	return comboBox
+}
+
+func CreateComboBoxWithModelAndEntry(model gtk.ITreeModel, column int) *gtk.ComboBox {
+	comboBox, err := gtk.ComboBoxNewWithModelAndEntry(model)
+	ErrorCheckIHM("Unable to create ComboBox ", err)
+	comboBox.SetEntryTextColumn(column)
+	// cellRenderer := CreateCellRendererText()
+	// comboBox.PackStart(cellRenderer, true)
+	// comboBox.AddAttribute(cellRenderer, "text", column)
+	// // comboBox.SetActive(0)
 	return comboBox
 }
 
@@ -727,6 +765,48 @@ func SetComboBoxText(comboBox *gtk.ComboBoxText, value string) bool {
 	return ok
 }
 
+func SetStringComboBox(comboBox *gtk.ComboBox, value string, column int) bool {
+	ok := false
+	if comboBox != nil {
+		for idx, elmt := range GetStringComboBoxList(comboBox, column) {
+			if elmt == value {
+				comboBox.SetActive(idx)
+				ok = true
+				break
+			}
+		}
+	}
+	return ok
+}
+
+func SetInt64ComboBox(comboBox *gtk.ComboBox, value int64, column int) bool {
+	ok := false
+	if comboBox != nil {
+		for idx, elmt := range GetInt64ComboBoxList(comboBox, column) {
+			if elmt == value {
+				comboBox.SetActive(idx)
+				ok = true
+				break
+			}
+		}
+	}
+	return ok
+}
+
+func SetIntComboBox(comboBox *gtk.ComboBox, value int, column int) bool {
+	ok := false
+	if comboBox != nil {
+		for idx, elmt := range GetIntComboBoxList(comboBox, column) {
+			if elmt == value {
+				comboBox.SetActive(idx)
+				ok = true
+				break
+			}
+		}
+	}
+	return ok
+}
+
 // =================
 func SetRadioButton(radioButton []*gtk.RadioButton, value string, nilValueList []string, valueList []string) {
 	if slices.Contains(nilValueList, value) {
@@ -756,7 +836,31 @@ func GetComboBoxTextList(comboBox *gtk.ComboBoxText) []string {
 	iModel, err := comboBox.GetModel()
 	ErrorCheckIHM("Unable to create ComboBox.GetModel ", err)
 
-	result := GetModelList(iModel)
+	result := GetStringModelList(iModel, 0)
+	return result
+}
+
+func GetStringComboBoxList(comboBox *gtk.ComboBox, column int) []string {
+	iModel, err := comboBox.GetModel()
+	ErrorCheckIHM("Unable to create ComboBox.GetModel ", err)
+
+	result := GetStringModelList(iModel, column)
+	return result
+}
+
+func GetInt64ComboBoxList(comboBox *gtk.ComboBox, column int) []int64 {
+	iModel, err := comboBox.GetModel()
+	ErrorCheckIHM("Unable to create ComboBox.GetModel ", err)
+
+	result := GetInt64ModelList(iModel, column)
+	return result
+}
+
+func GetIntComboBoxList(comboBox *gtk.ComboBox, column int) []int {
+	iModel, err := comboBox.GetModel()
+	ErrorCheckIHM("Unable to create ComboBox.GetModel ", err)
+
+	result := GetIntModelList(iModel, column)
 	return result
 }
 
@@ -797,13 +901,37 @@ func GetMenuItemStyleContext(menuItem *gtk.MenuItem) *gtk.StyleContext {
 }
 
 // =================
-func GetModelList(iModel gtk.ITreeModel) []string {
+func GetStringModelList(iModel gtk.ITreeModel, column int) []string {
 	var result []string
 
 	model := iModel.(*gtk.ListStore)
 
 	model.ForEach(func(model *gtk.TreeModel, path *gtk.TreePath, iter *gtk.TreeIter) bool {
-		result = append(result, GetStringValue(model, iter, 0))
+		result = append(result, GetStringValue(model, iter, column))
+		return false // pour ne pas stopper la boucle ForEach
+	})
+
+	return result
+}
+func GetInt64ModelList(iModel gtk.ITreeModel, column int) []int64 {
+	var result []int64
+
+	model := iModel.(*gtk.ListStore)
+
+	model.ForEach(func(model *gtk.TreeModel, path *gtk.TreePath, iter *gtk.TreeIter) bool {
+		result = append(result, GetInt64Value(model, iter, column))
+		return false // pour ne pas stopper la boucle ForEach
+	})
+
+	return result
+}
+func GetIntModelList(iModel gtk.ITreeModel, column int) []int {
+	var result []int
+
+	model := iModel.(*gtk.ListStore)
+
+	model.ForEach(func(model *gtk.TreeModel, path *gtk.TreePath, iter *gtk.TreeIter) bool {
+		result = append(result, GetIntValue(model, iter, column))
 		return false // pour ne pas stopper la boucle ForEach
 	})
 
@@ -967,7 +1095,7 @@ func SendNotification(title, message string) {
 // =================
 // #### CUSTOM #####
 // =================
-func CreateCalendarButton(date *gtk.Entry, winMain *gtk.Window, iconCalendar *gdk.Pixbuf) *gtk.Button {
+func CreateCalendarButton(date *gtk.Entry, winMain *gtk.Window, iconCalendar *gdk.Pixbuf, saveBtn *gtk.Button) *gtk.Button {
 	dateBtn := CreateImageButton("", iconCalendar)
 	dateBtn.Connect("clicked", func() {
 		winCalendar := CreatePopup(winMain, 10, gtk.WIN_POS_MOUSE)
@@ -1011,11 +1139,18 @@ func CreateCalendarButton(date *gtk.Entry, winMain *gtk.Window, iconCalendar *gd
 				mm = "0" + mm
 			}
 			date.SetText(jj + "/" + mm + "/" + aaaa)
+
+			if saveBtn != nil {
+				saveBtn.SetCanFocus(true) // Donne le focus au bouton "Save" pour pouvoir intercepter la touche Return ou Enter ==> valide le formulaire
+				saveBtn.GrabFocus()
+			}
+
 			winCalendar.Close()
 		})
 
 		winCalendar.ShowAll()
 	})
+
 	return dateBtn
 }
 
@@ -1093,6 +1228,12 @@ func CloseProgressBarPopup() {
 		// fmt.Println("CloseProgressBarPopup")
 		progressBarPopup.Close()
 		progressBarPopup.Destroy()
+	}
+}
+
+func RefreshProgressBar() {
+	for gtk.EventsPending() {
+		gtk.MainIterationDo(false)
 	}
 }
 

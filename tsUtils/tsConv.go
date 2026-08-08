@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"golang.org/x/text/runes"
@@ -20,6 +21,14 @@ func AtoI(saisie string) int {
 	return value
 }
 
+func SliceAtoI(value []string) []int {
+	res := []int{}
+	for _, val := range value {
+		res = append(res, AtoI(val))
+	}
+	return res
+}
+
 func AtoI64(saisie string) int64 {
 	value, err := strconv.ParseInt(saisie, 10, 64)
 	if err != nil {
@@ -28,12 +37,49 @@ func AtoI64(saisie string) int64 {
 	return value
 }
 
+func SliceAtoI64(value []string) []int64 {
+	res := []int64{}
+	for _, val := range value {
+		res = append(res, AtoI64(val))
+	}
+	return res
+}
+
 func ItoA(value int) string {
 	return strconv.Itoa(value)
 }
 
+func SliceItoA(value []int) []string {
+	res := []string{}
+	for _, val := range value {
+		res = append(res, ItoA(val))
+	}
+	return res
+}
+
 func I64toA(value int64) string {
 	return strconv.FormatInt(int64(value), 10)
+}
+
+func I64toFloatToA(value int64) string {
+	var ret float64
+	ret = float64(value) / 100.0
+	switch {
+	case value%100 == 0:
+		return fmt.Sprint(value / 100)
+	case value%10 == 0:
+		return fmt.Sprintf("%.1f", ret)
+	default:
+		return fmt.Sprintf("%.2f", ret)
+	}
+}
+
+func SliceI64toA(value []int64) []string {
+	res := []string{}
+	for _, val := range value {
+		res = append(res, I64toA(val))
+	}
+	return res
 }
 
 func AtoF(saisie string) float32 {
@@ -160,6 +206,45 @@ func ConvertDate(dateIn string) string {
 		}
 	}
 	return result
+}
+
+// convertir une date au format jj/mm/aaaa (jour/mois/année) vers aaaa/mm/jj (année/mois/jour)
+func DateConvert(dateInput string) string {
+	// Ex: dateInput = "28/05/2026"
+
+	// 1. Définir le format d'entrée (jour/mois/année)
+	// Note : En Go, le format de référence est le 01/02/2006 15:04:05
+	formatEntree := "02/01/2006"
+
+	// 2. Parser la chaîne en un objet time.Time
+	dateObj, err := time.Parse(formatEntree, dateInput)
+	if err != nil {
+		fmt.Printf("Erreur de format : %v\n", err)
+		return "19000101"
+	}
+
+	// 3. Définir le format de sortie (année/mois/jour)
+	formatSortie := "2006/01/02"
+
+	// 4. Formater l'objet time en nouvelle chaîne
+	dateOutput := dateObj.Format(formatSortie)
+
+	// fmt.Printf("Entrée : %s\n", dateInput)
+	// fmt.Printf("Sortie : %s\n", dateOutput)
+
+	// Ex: dateOutput = "2026/05/28"
+	return dateOutput
+}
+
+// convertir une date au format jj/mm/aaaa (jour/mois/année) vers aaaammjj (annéeMoisJour)
+func ConvertDateFormat(input string) string {
+	// Ex: dateInput = "28/05/2026"
+	t, err := time.Parse("02/01/2006", input)
+	if err != nil {
+		return "19000101"
+	}
+	// Ex: dateOutput = "20260528"
+	return t.Format("20060102")
 }
 
 // removeAccents() remplace les caractères accentués par leurs équivalents non accentués

@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/X-07/Library/gotk3"
-	"github.com/gotk3/gotk3/glib"
 )
 
 // TraceLog :
@@ -312,19 +311,21 @@ func CopyDirectory(scrDir, dest string) error {
 		return err
 	}
 
-	glib.IdleAdd(func() {
-		if gotk3.ProgressBar != nil {
-			gotk3.ProgressBar.SetText("Copie des photos de la collection ...")
-		}
-	})
+	// glib.IdleAdd(func() {
+	if gotk3.ProgressBar != nil {
+		gotk3.ProgressBar.SetText("Copie des photos de la collection ...")
+		gotk3.RefreshProgressBar()
+	}
+	// })
 	nbTotal := len(entries)
 	for idx, entry := range entries {
-		glib.IdleAdd(func() {
-			if gotk3.ProgressBar != nil {
-				gotk3.ProgressBar.SetText(fmt.Sprintf("Copie des photos de la collection [N° %d]", idx))
-				gotk3.ProgressBar.SetFraction(float64(idx) / float64(nbTotal))
-			}
-		})
+		// glib.IdleAdd(func() {
+		if gotk3.ProgressBar != nil {
+			gotk3.ProgressBar.SetText(fmt.Sprintf("Copie des photos de la collection [N° %d]", idx))
+			gotk3.ProgressBar.SetFraction(float64(idx) / float64(nbTotal))
+			gotk3.RefreshProgressBar()
+		}
+		// })
 
 		sourcePath := filepath.Join(scrDir, entry.Name())
 		destPath := filepath.Join(dest, entry.Name())

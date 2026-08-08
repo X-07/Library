@@ -275,6 +275,7 @@ type mediaInfoVideo struct {
 	Duration      int64  // 5315 ( < 5314.935000000 s)
 	DurationAff   int64  // 89
 	BitRate       int64  // 2600 ( < 2600000 bps)
+	BitRateMode   string // VBR || ''
 	Width         int64  // 1920
 	Height        int64  // 1080
 	FrameRateMode string // Constant/Variable ( < CFR)
@@ -295,6 +296,7 @@ type mediaInfoAudio struct {
 	Format           string // AC-3
 	CodecID          string // A_AC3
 	CodecA           string
+	Title            string
 	Duration         int64  // 5315 (5314.656000000 s)
 	DurationAff      int64  // 89
 	BitRateMode      string // Constant/Variable (CBR)
@@ -329,6 +331,7 @@ type mediaInfoChannelDetail struct {
 type mediaInfoText struct {
 	Format   string // UTF-8
 	CodecID  string // S_TEXT/UTF8
+	Title    string
 	Language string // fr
 }
 
@@ -336,6 +339,7 @@ type mediaInfoText struct {
 type mediaInfoMultiPiste struct {
 	Format   string // UTF-8 / UTF-8
 	Language string // en / fr
+	Title    string // FR Forced / FR Full
 	NoFrench bool
 }
 
@@ -448,6 +452,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			video.Duration, video.XDuration = extractDuration(track.Duration)
 			video.DurationAff, video.XDurationAff = extractDurationMN(track.Duration)
 			video.BitRate, video.XBitRate = extractBitRate(track.BitRate, track.NominalBitRate, track.BitRateNominal)
+			video.BitRateMode = track.BitRateMode
 			video.Width, video.XWidth = extractSize(track.Width)
 			video.Height, video.XHeight = extractSize(track.Height)
 			if track.FrameRateMode == "CFR" {
@@ -469,6 +474,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			audio.Format = track.Format
 			audio.CodecID = track.CodecID
 			audio.CodecA = getCodeCodecAudio(audio.Format)
+			audio.Title = track.Title
 			audio.Duration, audio.XDuration = extractDuration(track.Duration)
 			audio.DurationAff, audio.XDurationAff = extractDurationMN(track.Duration)
 			audio.BitRateMode = track.BitRateMode
@@ -486,6 +492,7 @@ func GetMediaInfo(fileName string) MediaInfo {
 			var text mediaInfoText
 			text.Format = track.Format
 			text.CodecID = track.CodecID
+			text.Title = track.Title
 			text.Language = track.Language
 			mediaInfo.Text = append(mediaInfo.Text, text)
 		}
@@ -493,29 +500,35 @@ func GetMediaInfo(fileName string) MediaInfo {
 	if len(mediaInfo.Audio) > 0 {
 		var lang []string
 		var format []string
+		var title []string
 		for _, audio := range mediaInfo.Audio {
 			format = append(format, audio.Format)
 			lang = append(lang, audio.Language)
+			title = append(title, audio.Title)
 			if audio.Language != "fr" {
 				mediaInfo.General.AudioMultiPiste.NoFrench = true
 			}
 		}
 		mediaInfo.General.AudioMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.AudioMultiPiste.Language = strings.Join(lang, " / ")
+		mediaInfo.General.AudioMultiPiste.Title = strings.Join(title, " / ")
 	}
 
 	if len(mediaInfo.Text) > 0 {
 		var lang []string
 		var format []string
+		var title []string
 		for _, text := range mediaInfo.Text {
 			format = append(format, text.Format)
 			lang = append(lang, text.Language)
+			title = append(title, text.Title)
 			if text.Language != "fr" {
 				mediaInfo.General.TextMultiPiste.NoFrench = true
 			}
 		}
 		mediaInfo.General.TextMultiPiste.Format = strings.Join(format, " / ")
 		mediaInfo.General.TextMultiPiste.Language = strings.Join(lang, " / ")
+		mediaInfo.General.TextMultiPiste.Title = strings.Join(title, " / ")
 	}
 
 	mediaInfo.General.Conteneur = strings.ToLower(filepath.Ext(fileName))
