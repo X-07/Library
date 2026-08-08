@@ -74,6 +74,10 @@ func I64toFloatToA(value int64) string {
 	}
 }
 
+func CentsToEurosToA(value int64) string {
+	return fmt.Sprintf("%.2f", float64(value)/100.0)
+}
+
 func SliceI64toA(value []int64) []string {
 	res := []string{}
 	for _, val := range value {
